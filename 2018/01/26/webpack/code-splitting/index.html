@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="webpack," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="作为当前风头正盛的打包工具，webpack风靡前端界。确实作为引领了一个时代的打包工具，很多方面都带来了颠覆性的改进，让我们更加的感受到自动化的快感。不过最为大家诟病的一点就是用起来太难了。">
+<meta name="keywords" content="webpack">
+<meta property="og:type" content="article">
+<meta property="og:title" content="webpack优化之code splitting">
+<meta property="og:url" content="http://xxdy.tech/2018/01/26/webpack/code-splitting/index.html">
+<meta property="og:site_name" content="雨打梨梦三村边">
+<meta property="og:description" content="作为当前风头正盛的打包工具，webpack风靡前端界。确实作为引领了一个时代的打包工具，很多方面都带来了颠覆性的改进，让我们更加的感受到自动化的快感。不过最为大家诟病的一点就是用起来太难了。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://user-gold-cdn.xitu.io/2018/1/25/1612dd777da3adc1?w=738&h=254&f=jpeg&s=19970">
+<meta property="og:image" content="https://user-gold-cdn.xitu.io/2018/1/25/1612dd777e941ac1?w=1280&h=402&f=png&s=119875">
+<meta property="og:image" content="https://user-gold-cdn.xitu.io/2018/1/25/1612dd77812b0d89?w=1170&h=342&f=png&s=129329">
+<meta property="og:image" content="https://user-gold-cdn.xitu.io/2018/1/25/1612dd77c0c64a7d?w=1086&h=266&f=png&s=94861">
+<meta property="og:updated_time" content="2018-08-24T07:48:19.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="webpack优化之code splitting">
+<meta name="twitter:description" content="作为当前风头正盛的打包工具，webpack风靡前端界。确实作为引领了一个时代的打包工具，很多方面都带来了颠覆性的改进，让我们更加的感受到自动化的快感。不过最为大家诟病的一点就是用起来太难了。">
+<meta name="twitter:image" content="https://user-gold-cdn.xitu.io/2018/1/25/1612dd777da3adc1?w=738&h=254&f=jpeg&s=19970">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://xxdy.tech/2018/01/26/webpack/code-splitting/"/>
+
+
+
+
+
+  <title>webpack优化之code splitting | 雨打梨梦三村边</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">雨打梨梦三村边</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">潇湘待雨</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://xxdy.tech/2018/01/26/webpack/code-splitting/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="felix.pan">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="雨打梨梦三村边">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">webpack优化之code splitting</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-26T10:55:57+08:00">
+                2018-01-26
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>作为当前风头正盛的打包工具，webpack风靡前端界。确实作为引领了一个时代的打包工具，很多方面都带来了颠覆性的改进，让我们更加的感受到自动化的快感。不过最为大家诟病的一点就是用起来太难了。<br><a id="more"></a><br>要想愉快的使用，要使用n多的配置项，究其原因在于文档的不够详细、本身默认集成的不足。<br>也不能说这是缺点吧，更多的主动权放给用户就意味着配置工作量的增加，这里就不过多探讨了。<br>当历尽千辛万苦，你的项目跑起来之后，可能会发现有一些不太美好的问题的出现，编译慢、打包文件大等。那么，我们还要花些时间来看看怎么优化相关配置了。 下面一起看下code splitting </p>
+<h2 id="code-splitting出现的背景"><a href="#code-splitting出现的背景" class="headerlink" title="code splitting出现的背景"></a>code splitting出现的背景</h2><p>对于前端资源来说，文件体积过大是很影响性能的一项。特别是对于移动端的设备而言简直是灾难。<br>此外对于某些只要特定环境下才需要的代码，一开始就加载进来显然也不那么合理，这就引出了按需加载的概念了。</p>
+<p>   为了解决这些情况，代码拆分就应运而生了。代码拆分故名思意就是将大的文件按不同粒度拆分，以满足解决生成文件体积过大、按需加载等需求。<br>   具体到webpack而言有下面几种方式来达到我们的目的。</p>
+<h2 id="webpack实现代码拆分的方式"><a href="#webpack实现代码拆分的方式" class="headerlink" title="webpack实现代码拆分的方式"></a>webpack实现代码拆分的方式</h2><p>webpack通过下面三种方式来达到以上目的</p>
+<ol>
+<li>Entry Points: 多入口分开打包</li>
+<li>Prevent Duplication:去重，抽离公共模块和第三方库</li>
+<li>Dynamic Imports:动态加载<br>这里不去扒文档上的定义了，我们从一个例子中来逐步体会他们不同的作用。</li>
+</ol>
+<p>假设我们有这么个项目，有下面几个文件<br><img src="https://user-gold-cdn.xitu.io/2018/1/25/1612dd777da3adc1?w=738&amp;h=254&amp;f=jpeg&amp;s=19970" alt="">  </p>
+<p>代码很简单(示例而已，直接用commonjs的语法来写了):  </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//a.js</span></span><br><span class="line"><span class="keyword">var</span> react = <span class="built_in">require</span>(<span class="string">'react'</span>)</span><br><span class="line"><span class="keyword">var</span> tool = <span class="built_in">require</span>(<span class="string">'./tool'</span>)</span><br><span class="line"><span class="keyword">var</span> b = <span class="built_in">require</span>(<span class="string">'./b'</span>)</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">load</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    b()</span><br><span class="line">    tool()</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'全部文件都从一个入口打包'</span>)</span><br><span class="line">&#125;</span><br><span class="line">load()</span><br><span class="line"><span class="comment">//b.js</span></span><br><span class="line"><span class="keyword">var</span> react = <span class="built_in">require</span>(<span class="string">'react'</span>)</span><br><span class="line"><span class="keyword">var</span> tool = <span class="built_in">require</span>(<span class="string">'./tool'</span>)</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">b</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    tool()</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'这是bjs文件'</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">module</span>.exports = b;</span><br><span class="line"><span class="comment">//tool.js</span></span><br><span class="line"><span class="keyword">var</span> react = <span class="built_in">require</span>(<span class="string">'react'</span>)</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">tool</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'这是tooljs文件'</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">module</span>.exports = tool;</span><br><span class="line"><span class="string">``</span><span class="string">`  </span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">配置很简单:</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">`</span><span class="string">``</span>js</span><br><span class="line"><span class="keyword">var</span> webpack = <span class="built_in">require</span>(<span class="string">'webpack'</span>);<span class="built_in">module</span>.exports = &#123;</span><br><span class="line">    entry: <span class="string">'./codesplitting/c1/a.js'</span>,</span><br><span class="line">    output: &#123;</span><br><span class="line">        path: __dirname,</span><br><span class="line">        filename: <span class="string">'/dist/index.js'</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//*****</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>直接打包：可以看到文件大小有2047行,体积也变大了<br><img src="https://user-gold-cdn.xitu.io/2018/1/25/1612dd777e941ac1?w=1280&amp;h=402&amp;f=png&amp;s=119875" alt="">  </p>
+<p>目前只引入了react，并且业务代码几乎没有的情况下。大家可以猜到实际项目中的情况了。来让我们进行第一优化  </p>
+<h3 id="Entry-Points"><a href="#Entry-Points" class="headerlink" title="Entry Points"></a>Entry Points</h3><p>如果业务中的项目不是单页面应用，这一步可以忽略了，直接是多入口打包。这里是为了演示效果，强行分一个模块出来打包，假设我们的文件也很大，需要将b.js单独打个包出来:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">entry: &#123;</span><br><span class="line">    index:<span class="string">'./codesplitting/c1/a.js'</span>,</span><br><span class="line">    other:<span class="string">'./codesplitting/c1/b.js'</span></span><br><span class="line">&#125;,</span><br><span class="line">output: &#123;</span><br><span class="line">    path: path.resolve(__dirname, <span class="string">'./dist'</span>),</span><br><span class="line">    filename: <span class="string">'[name].js'</span></span><br><span class="line">&#125;，</span><br><span class="line"><span class="comment">//***</span></span><br></pre></td></tr></table></figure>
+<p>这里a.js也需要修改,去掉对b的引用。入口文件之间不能相互引用的。不然，问题就大了，到底以谁为主呢，这样就陷入了循环引用的问题。<br>此时的生成文件如下:<br><img src="https://user-gold-cdn.xitu.io/2018/1/25/1612dd77812b0d89?w=1170&amp;h=342&amp;f=png&amp;s=129329" alt=""><br>看来文件竟然只小了那么一点了吧？第一步的优化这里就完成了，显然你会认为我在开玩笑。<br>当然这只是万里长征第一步，看一下dist下的文件不难发现两个文件中都把react这个第三方库和tool.js这个可复用模块打进去了，显然这样重复打包有点没必要。<br>是不是可以把这些复用性强的模块拿出来单独打包呢？<br>这样浏览器第一次请求之后就会将该文件缓存起来，从服务端请求的只有体积缩小之后的业务文件了，这样的话加载速度显然会有所提升。<br>如果你也是这么想的，来一起继续看下去。</p>
+<h3 id="Prevent-Duplication"><a href="#Prevent-Duplication" class="headerlink" title="Prevent Duplication"></a>Prevent Duplication</h3><p>webpack去除重复引用是通过<a href="https://webpack.js.org/plugins/commons-chunk-plugin/" target="_blank" rel="noopener">CommonsChunkPlugin</a>插件来实现的。该插件的配置项如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="comment">//被抽离为公共文件的chunk名，例如common,可以是string或者数组</span></span><br><span class="line">    <span class="comment">//显然如果是单个的模块，就是name多个就是names</span></span><br><span class="line">    name:string,</span><br><span class="line">    names:[],</span><br><span class="line">    <span class="comment">//打包之后公共模块的名称模板</span></span><br><span class="line">    <span class="comment">//例如'[name].js'</span></span><br><span class="line">    <span class="comment">//如果省略，则和name名称一致</span></span><br><span class="line">    filename:string,</span><br><span class="line">     <span class="comment">//模块被引的最小次数，也就是说至少有几个组件引用了该模块。</span></span><br><span class="line">    <span class="comment">//如果是Infinity，则表明单纯的创建，并不做任何事情</span></span><br><span class="line">    minChunks:<span class="number">2</span>  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>具体在webpack中去重对于第三方库显示声明vendor，公共模块声明common的方式来处理</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line">entry: &#123;</span><br><span class="line">        index:<span class="string">'./codesplitting/c1/a.js'</span>,</span><br><span class="line">        other:<span class="string">'./codesplitting/c1/b.js'</span>,</span><br><span class="line">        <span class="comment">//第三方库显示声明</span></span><br><span class="line">        vendor:[<span class="string">'react'</span>],</span><br><span class="line">        <span class="comment">//公共组件声明为common</span></span><br><span class="line">        common:[<span class="string">'./codesplitting/c1/tool'</span>]</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="comment">//***</span></span><br><span class="line">    plugins: [</span><br><span class="line">        <span class="keyword">new</span> webpack.optimize.CommonsChunkPlugin(&#123;</span><br><span class="line">            names:[<span class="string">"common"</span>, <span class="string">"vendor"</span>],</span><br><span class="line">            filename: <span class="string">"[name].js"</span></span><br><span class="line">        &#125;)  </span><br><span class="line">    ]</span><br><span class="line"><span class="string">``</span><span class="string">`  </span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">打包结果如下：</span></span><br><span class="line"><span class="string">![](https://user-gold-cdn.xitu.io/2018/1/25/1612dd7786a1c7a1?w=958&amp;h=266&amp;f=png&amp;s=95165)</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">可以看到index和other两个业务包已经很小了，react被抽离到单独的包中。  </span></span><br><span class="line"><span class="string">这样还有一个问题，对于某些代码可能只有在特定条件下才执行，或者可能就不执行。  </span></span><br><span class="line"><span class="string">我不希望在首屏就去加载它，也就是我们常说的按需加载是要怎么做呢。一起看下去。  </span></span><br><span class="line"><span class="string">### Dynamic Imports  </span></span><br><span class="line"><span class="string">webpack建议如下两种方式使用动态加载。   </span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">1)、ECMAScript中出于提案状态的import()   </span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">2)、webpack 特定的 require.ensure   </span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">我们这里就是用第二种来看下效果(毕竟偷懒没用babel...),在ajs中动态引入di.js  </span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">`</span><span class="string">``</span>js</span><br><span class="line">    <span class="comment">//虽然始终会加载,大家能明白就行</span></span><br><span class="line">    <span class="keyword">if</span>(<span class="literal">true</span>)&#123;</span><br><span class="line">        <span class="built_in">require</span>.ensure([],<span class="function"><span class="keyword">function</span>(<span class="params">require</span>)</span>&#123;</span><br><span class="line">            <span class="keyword">var</span> di = <span class="built_in">require</span>(<span class="string">'./di'</span>)</span><br><span class="line">        &#125;)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//新增动态加载的js</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">di</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">        tool()</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">'这是动态引入的文件'</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">module</span>.exports = di;</span><br></pre></td></tr></table></figure>
+<p>运行之后可以发现多了个2.2.js,打开可以发现就是我们新建的动态引入的di.js<br><img src="https://user-gold-cdn.xitu.io/2018/1/25/1612dd77c0c64a7d?w=1086&amp;h=266&amp;f=png&amp;s=94861" alt=""></p>
+<p>大家可能会问怎么确定就是动态引入的呢，虽然本示例只能看打包之后的例子(就不引入dev server了，毕竟是懒。。。)我们依然可以从代码里看到结果。<br>首先、查看index.js文件，可以看到下面的代码：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">  <span class="keyword">var</span> react = __webpack_require__(<span class="number">2</span>)</span><br><span class="line"><span class="keyword">var</span> tool = __webpack_require__(<span class="number">1</span>)  </span><br><span class="line"><span class="comment">/****省略8*****/</span></span><br><span class="line">  <span class="comment">//虽然始终会加载</span></span><br><span class="line"> <span class="keyword">if</span>(<span class="literal">true</span>)&#123;</span><br><span class="line">     __webpack_require__.e<span class="comment">/* nsure */</span>(<span class="number">2</span>, <span class="function"><span class="keyword">function</span>(<span class="params">require</span>)</span>&#123;</span><br><span class="line">         <span class="keyword">var</span> di = __webpack_require__(<span class="number">13</span>)</span><br><span class="line">     &#125;)</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p>与直接require的模块不同,require.ensure被转化为了 <strong>webpack_require</strong>.e方法，来继续看一下该方法有什么用。</p>
+<pre><code class="js">   __webpack_require__.e = <span class="function"><span class="keyword">function</span> <span class="title">requireEnsure</span>(<span class="params">chunkId, callback</span>) </span>{
+    <span class="comment">// "0" is the signal for "already loaded"</span>
+    <span class="keyword">if</span>(installedChunks[chunkId] === <span class="number">0</span>)
+        <span class="keyword">return</span> callback.call(<span class="literal">null</span>, __webpack_require__);
+
+    <span class="comment">// an array means "currently loading".</span>
+    <span class="keyword">if</span>(installedChunks[chunkId] !== <span class="literal">undefined</span>) {
+        installedChunks[chunkId].push(callback);
+    } <span class="keyword">else</span> {
+        <span class="comment">// start chunk loading</span>
+        installedChunks[chunkId] = [callback];
+        <span class="keyword">var</span> head = <span class="built_in">document</span>.getElementsByTagName(<span class="string">'head'</span>)[<span class="number">0</span>];
+        <span class="keyword">var</span> script = <span class="built_in">document</span>.createElement(<span class="string">'script'</span>);
+        script.type = <span class="string">'text/javascript'</span>;
+        script.charset = <span class="string">'utf-8'</span>;
+        script.async = <span class="literal">true</span>;
+
+        script.src = __webpack_require__.p + <span class="string">""</span> + chunkId + <span class="string">"."</span> + ({<span class="string">"0"</span>:<span class="string">"common"</span>,<span class="string">"1"</span>:<span class="string">"index"</span>,<span class="string">"3"</span>:<span class="string">"other"</span>}[chunkId]||chunkId) + <span class="string">".js"</span>;
+        head.appendChild(script);
+    }
+};
+</code></pre>
+<p>结合注释直接从源码中可以看出来，最后面的条件语句来创建script标签进而实现动态加载的。所谓动态加载本质还是要创建script标签来实现的。</p>
+<h4 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h4><p>至此代码分割部分的优化已经完成了，以上是个人关于代码分割的简单理解，抛砖引玉，共同学习进步。更多请移步<a href="https://github.com/xiaoxiangdaiyu/webpack_demo/tree/master/codesplitting" target="_blank" rel="noopener">github查看</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/webpack/" rel="tag"># webpack</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/12/22/css/postcss/" rel="next" title="更便捷的css处理方式-PostCSS">
+                <i class="fa fa-chevron-left"></i> 更便捷的css处理方式-PostCSS
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/05/07/performance/" rel="prev" title="硬件、网络及性能">
+                硬件、网络及性能 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">felix.pan</p>
+              <p class="site-description motion-element" itemprop="description">潇湘待雨个人博客</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">16</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#code-splitting出现的背景"><span class="nav-number">1.</span> <span class="nav-text"><a href="#code-splitting&#x51FA;&#x73B0;&#x7684;&#x80CC;&#x666F;" class="headerlink" title="code splitting&#x51FA;&#x73B0;&#x7684;&#x80CC;&#x666F;"></a>code splitting&#x51FA;&#x73B0;&#x7684;&#x80CC;&#x666F;</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#webpack实现代码拆分的方式"><span class="nav-number">2.</span> <span class="nav-text"><a href="#webpack&#x5B9E;&#x73B0;&#x4EE3;&#x7801;&#x62C6;&#x5206;&#x7684;&#x65B9;&#x5F0F;" class="headerlink" title="webpack&#x5B9E;&#x73B0;&#x4EE3;&#x7801;&#x62C6;&#x5206;&#x7684;&#x65B9;&#x5F0F;"></a>webpack&#x5B9E;&#x73B0;&#x4EE3;&#x7801;&#x62C6;&#x5206;&#x7684;&#x65B9;&#x5F0F;</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Entry-Points"><span class="nav-number">2.1.</span> <span class="nav-text"><a href="#Entry-Points" class="headerlink" title="Entry Points"></a>Entry Points</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Prevent-Duplication"><span class="nav-number">2.2.</span> <span class="nav-text"><a href="#Prevent-Duplication" class="headerlink" title="Prevent Duplication"></a>Prevent Duplication</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#结束语"><span class="nav-number">2.2.1.</span> <span class="nav-text"><a href="#&#x7ED3;&#x675F;&#x8BED;" class="headerlink" title="&#x7ED3;&#x675F;&#x8BED;"></a>&#x7ED3;&#x675F;&#x8BED;</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">felix.pan</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

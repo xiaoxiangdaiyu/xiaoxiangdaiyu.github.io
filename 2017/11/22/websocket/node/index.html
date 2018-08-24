@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="早点时候翻译了篇实现一个websocket服务器-理论篇 ，简单介绍了下理论基础，本来打算放在一起，但是感觉太长了大家可能都看不下去。不过发现如果拆开的话，还是不可避免的要提及理论部分。用到的地方就简要回顾一下好了。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="实现一个websocket服务器-node">
+<meta property="og:url" content="http://xxdy.tech/2017/11/22/websocket/node/index.html">
+<meta property="og:site_name" content="雨打梨梦三村边">
+<meta property="og:description" content="早点时候翻译了篇实现一个websocket服务器-理论篇 ，简单介绍了下理论基础，本来打算放在一起，但是感觉太长了大家可能都看不下去。不过发现如果拆开的话，还是不可避免的要提及理论部分。用到的地方就简要回顾一下好了。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-08-24T07:48:19.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="实现一个websocket服务器-node">
+<meta name="twitter:description" content="早点时候翻译了篇实现一个websocket服务器-理论篇 ，简单介绍了下理论基础，本来打算放在一起，但是感觉太长了大家可能都看不下去。不过发现如果拆开的话，还是不可避免的要提及理论部分。用到的地方就简要回顾一下好了。">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://xxdy.tech/2017/11/22/websocket/node/"/>
+
+
+
+
+
+  <title>实现一个websocket服务器-node | 雨打梨梦三村边</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">雨打梨梦三村边</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">潇湘待雨</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://xxdy.tech/2017/11/22/websocket/node/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="felix.pan">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="雨打梨梦三村边">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">实现一个websocket服务器-node</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-11-22T00:00:00+08:00">
+                2017-11-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>早点时候翻译了篇<a href="https://github.com/xiaoxiangdaiyu/chartroom/blob/master/src/websocket/README.md" target="_blank" rel="noopener">实现一个websocket服务器-理论篇 </a>，简单介绍了下理论基础，本来打算放在一起，但是感觉太长了大家可能都看不下去。不过发现如果拆开的话，还是不可避免的要提及理论部分。用到的地方就简要回顾一下好了。<br><a id="more"></a></p>
+<h2 id="Websockt-基本通信流程"><a href="#Websockt-基本通信流程" class="headerlink" title="Websockt 基本通信流程"></a>Websockt 基本通信流程</h2><p>在具体代码实现之前，我们需要大概理一下思路。回顾一下websocket的理论部分。简单的websocket流程如下(这里就不谈详细的过程了，大概描述一下)   </p>
+<ol>
+<li>客户端发送握手请求</li>
+<li>服务器响应、处理握手并返回 </li>
+<li>客户端验证通过后，发送数据</li>
+<li>服务器接收、处理数据，然后返回给客户端</li>
+<li>客户端接收服务器的推送  </li>
+</ol>
+<p>作为一个服务器而言，我们主要的精力需要放在2，4这两个步骤。</p>
+<h2 id="响应并处理握手"><a href="#响应并处理握手" class="headerlink" title="响应并处理握手"></a>响应并处理握手</h2><p>虽然websocket可以实现服务器推送，前提在于该连接已经建立。客户端仍然需要发起一个Websocket握手请求。 既然要响应该握手请求，我们需要了解一下该请求。</p>
+<h3 id="客户端握手请求"><a href="#客户端握手请求" class="headerlink" title="客户端握手请求"></a>客户端握手请求</h3><p>客户端的握手请求是一个标准的HTTP请求，大概像下面的例子。   </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">GET / HTTP/1.1  //HTTP版本必须1.1及以上，请求方式为GET</span><br><span class="line">Host: localhost:8081 //本地项目</span><br><span class="line">Connection: Upgrade </span><br><span class="line">Pragma: no-cache</span><br><span class="line">Cache-Control: no-cache</span><br><span class="line">Upgrade: websocket //指定websocket协议</span><br><span class="line">Origin: http://192.168.132.170:8000</span><br><span class="line">Sec-WebSocket-Version: 13 //版本</span><br><span class="line">User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36</span><br><span class="line">Accept-Encoding: gzip, deflate, br</span><br><span class="line">Accept-Language: zh-CN,zh;q=0.9,en;q=0.8</span><br><span class="line">Cookie: optimizelyEndUserId=oeu1505722530441r0.5993643212774391; _ga=GA1.1.557695983.1505722531</span><br><span class="line">Sec-WebSocket-Key: /2R6uuzPqLT/6z8fnZfN3w==   //握手返回基于该密钥</span><br><span class="line">Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits</span><br></pre></td></tr></table></figure>
+<p>上面列出了实际例子中的请求头，内容由浏览器生成，需要注意的部分如下。  </p>
+<ul>
+<li>HTTP版本必须1.1及以上，请求方式为GET</li>
+<li>Connection: Upgrade  </li>
+<li>Upgrade: websocket //指定websocket  </li>
+<li>Sec-WebSocket-Key  密钥 服务器处理握手的依据 </li>
+</ul>
+<p>我们服务器处理握手时需要关注的就是上面四点。</p>
+<h3 id="响应握手请求"><a href="#响应握手请求" class="headerlink" title="响应握手请求"></a>响应握手请求</h3><p>服务器根据是否websocket的必须请求头，分下面两种情况：  </p>
+<ol>
+<li>不满足，作为http请求来响应。</li>
+<li>满足，解析处理按照websocket规定的数据格式来响应 </li>
+</ol>
+<h4 id="返回格式"><a href="#返回格式" class="headerlink" title="返回格式"></a>返回格式</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">HTTP/1.1 101 Switching Protocols</span><br><span class="line">Upgrade: websocket</span><br><span class="line">Connection: Upgrade</span><br><span class="line">Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=</span><br></pre></td></tr></table></figure>
+<p>请注意每一个header以\r\n结尾并且在最后一个后面加入额外的\r\n。 </p>
+<p>这里的Sec-WebSocket-Accept 就是基于请求头中Sec-WebSocket-Key来生成。规则如下：<br>Sec-WebSocket-Key 和”258EAFA5-E914-47DA-95CA-C5AB0DC85B11”链接，通过SHA-1 hash获得结果，然后返回该结果的base64编码。<br>代码如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 指定拼接字符</span></span><br><span class="line"><span class="keyword">var</span> ws_key = <span class="string">'258EAFA5-E914-47DA-95CA-C5AB0DC85B11'</span>;</span><br><span class="line"><span class="comment">// 生成相应key</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getAccpectKey</span>(<span class="params">rSWKey</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> crypto.createHash(<span class="string">'sha1'</span>).update(rSWKey + ws_key).digest(<span class="string">'base64'</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">handShake</span>(<span class="params">socket, headers</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> reqSWKey = headers[<span class="string">'Sec-WebSocket-Key'</span>],</span><br><span class="line">        resSWKey = getAccpectKey(reqSWKey)</span><br><span class="line">    socket.write(<span class="string">'HTTP/1.1 101 Switching Protocols\r\n'</span>);</span><br><span class="line">    socket.write(<span class="string">'Upgrade: websocket\r\n'</span>);</span><br><span class="line">    socket.write(<span class="string">'Connection: Upgrade\r\n'</span>);</span><br><span class="line">    socket.write(<span class="string">'Sec-WebSocket-Accept: '</span> + resSWKey + <span class="string">'\r\n'</span>);</span><br><span class="line">    socket.write(<span class="string">'\r\n'</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这样我们的握手协议就算完成了，此时会触发客户端websocket的onopen事件，即websocket打开，可以进行通信</p>
+<h3 id="解析数据"><a href="#解析数据" class="headerlink" title="解析数据"></a>解析数据</h3><h4 id="客户端发送帧格式"><a href="#客户端发送帧格式" class="headerlink" title="客户端发送帧格式"></a>客户端发送帧格式</h4><p>握手协议完成之后，我们就该解析数据了，还是要把这张帧格式拿出来。  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">    帧格式:  </span><br><span class="line">​​</span><br><span class="line">      0                   1                   2                   3</span><br><span class="line">      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1</span><br><span class="line">     +-+-+-+-+-------+-+-------------+-------------------------------+</span><br><span class="line">     |F|R|R|R| opcode|M| Payload len |    Extended payload length    |</span><br><span class="line">     |I|S|S|S|  (4)  |A|     (7)     |             (16/64)           |</span><br><span class="line">     |N|V|V|V|       |S|             |   (if payload len==126/127)   |</span><br><span class="line">     | |1|2|3|       |K|             |                               |</span><br><span class="line">     +-+-+-+-+-------+-+-------------+ - - - - - - - - - - - - - - - +</span><br><span class="line">     |     Extended payload length continued, if payload len == 127  |</span><br><span class="line">     + - - - - - - - - - - - - - - - +-------------------------------+</span><br><span class="line">     |                               |Masking-key, if MASK set to 1  |</span><br><span class="line">     +-------------------------------+-------------------------------+</span><br><span class="line">     | Masking-key (continued)       |          Payload Data         |</span><br><span class="line">     +-------------------------------- - - - - - - - - - - - - - - - +</span><br><span class="line">     :                     Payload Data continued ...                :</span><br><span class="line">     + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +</span><br><span class="line">     |                     Payload Data continued ...                |</span><br><span class="line">     +---------------------------------------------------------------+</span><br></pre></td></tr></table></figure>
+<p>每个从客户端发送到服务器的数据帧都遵循上面的格式。  </p>
+<ol>
+<li><p>MASK位：只表明信息是否已进行掩码处理。来自客户端的消息必须经过处理，因此我们应该将其置为1   </p>
+</li>
+<li><p>opcode字段定义如何解析有效的数据：  </p>
+<ul>
+<li>0x0 继续处理</li>
+<li>0x1 text(必须是UTF-8编码)  </li>
+<li>0x2 二进制 和其他叫做控制代码的数据。</li>
+<li>0x3-0x7 0xB-0xF 该版本的WebSockets无意义   </li>
+</ul>
+</li>
+<li><p>FIN 表明是否是数据集合的最后一段消息，如果为0，服务器继续监听消息，以待消息剩余的部分。否则服务器认为消息已经完全发送。</p>
+</li>
+<li>Payload len：有效数据长度  <ul>
+<li>Payload len&lt;126, 即为真实长度</li>
+<li>126,说明真实长度大于125，后面2个字节的值为真实长度</li>
+<li>127,真实长度大于65535，后面8字节值为真实长度 </li>
+</ul>
+</li>
+</ol>
+<h4 id="解析数据-1"><a href="#解析数据-1" class="headerlink" title="解析数据"></a>解析数据</h4><p>所谓解析数据，肯定是基于上面的格式按照一定规则来进行处理。下面就是处理的规则。  </p>
+<ol>
+<li>获取有效数据长度  </li>
+<li>获取掩码并依据规则进行反序列化数据</li>
+</ol>
+<p>直接看代码应该更加清晰。    </p>
+<pre><code class="js"><span class="comment">// 解析接受的数据帧</span>
+<span class="function"><span class="keyword">function</span> <span class="title">decodeFrame</span>(<span class="params">buffer</span>) </span>{
+    <span class="comment">/**</span>
+<span class="comment">     * &gt;&gt;&gt; 7 右移操作，即字节右移7位，目的是为了即只取第一位的值</span>
+<span class="comment">     * 10010030  ====&gt;   00000001</span>
+<span class="comment">     * &amp; 按位与  同1为1    </span>
+<span class="comment">     * 15二进制表示为：00001111  ,运算之后前四位即为0，得到后四位的值</span>
+<span class="comment">     * 11011000 &amp; 00001111  ===》  00001000</span>
+<span class="comment">     *  </span>
+<span class="comment">     */</span>
+    <span class="keyword">var</span> fBite = buffer[<span class="number">0</span>],
+        <span class="comment">/**</span>
+<span class="comment">         * 获取Fin的值，</span>
+<span class="comment">         * 1传输结束</span>
+<span class="comment">         * 0 继续监听 </span>
+<span class="comment">         */</span>
+        Fin = fBite &gt;&gt;&gt; <span class="number">7</span>,
+        <span class="comment">/**</span>
+<span class="comment">         * 获取opcode的值，opcode为fBite的4-7位</span>
+<span class="comment">         * &amp; 按位与  同1为1    </span>
+<span class="comment">         * 15二进制表示为：00001111  ,运算之后前四位即为0，得到后四位的值</span>
+<span class="comment">         */</span>
+        opcode = buffer[<span class="number">0</span>] &amp; <span class="number">15</span>,
+        <span class="comment">/**</span>
+<span class="comment">         * 获取有效数据长度 </span>
+<span class="comment">         */</span>
+        len = buffer[<span class="number">1</span>] &amp; <span class="number">127</span>,
+        <span class="comment">// 是否进行掩码处理，客户端请求必须为1</span>
+        Mask = buffer[<span class="number">1</span>] &gt;&gt;&gt; <span class="number">7</span>,
+        maskKey = <span class="literal">null</span>
+    <span class="comment">// 获取数据长度</span>
+    <span class="comment">//真实长度大于125，读取后面2字节</span>
+    <span class="keyword">if</span> (len == <span class="number">126</span>) {
+        len = buffer.readUInt16BE(<span class="number">2</span>)
+    } <span class="keyword">else</span> <span class="keyword">if</span> (len == <span class="number">127</span>) {
+        <span class="comment">// 真实长度大于65535，读取后面8字节</span>
+        len = buffer.readUInt64BE(<span class="number">2</span>)
+    }
+    <span class="comment">// 判断是否进行掩码处理</span>
+    Mask &amp;&amp; (maskKey = buffer.slice(<span class="number">2</span>,<span class="number">5</span>))
+    <span class="comment">/**</span>
+<span class="comment">     * 反掩码处理 </span>
+<span class="comment">     * 循环遍历加密的字节（octets，text数据的单位）并且将其与第（i%4）位掩码字节(即i除以4取余)进行异或运算</span>
+<span class="comment">     */</span>
+    <span class="keyword">if</span>(Mask){
+        <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">2</span>;i&lt;len ;i++){
+            buffer[i] = maskKey[(i - <span class="number">2</span>) % <span class="number">4</span>] ^ buffer[i];
+        }
+    }
+    <span class="keyword">var</span> data = buffer.slice(<span class="number">2</span>)
+    <span class="keyword">return</span> {
+        Fin:Fin,
+        opcode:opcode,
+        data:data
+    }
+}
+</code></pre>
+<h4 id="发送数据"><a href="#发送数据" class="headerlink" title="发送数据"></a>发送数据</h4><p>处理完接收到的数据之后，下面就是发送响应了。<br>响应数据不需要进行掩码运算，只需要根据帧的格式(即上面的帧)，将数据进行组装就好</p>
+<pre><code class="js"><span class="comment">// 加密发送数据</span>
+<span class="function"><span class="keyword">function</span> <span class="title">encodeFrame</span>(<span class="params">data</span>)</span>{
+    <span class="keyword">var</span> len = Buffer.byteLength(data),
+        <span class="comment">// 2的64位</span>
+        payload_len = len &gt; <span class="number">65535</span> ?<span class="number">10</span>:(len &gt; <span class="number">125</span> ? <span class="number">4</span> : <span class="number">2</span>),
+        buf = <span class="keyword">new</span> Buffer(len+payload_len)
+    <span class="comment">/**</span>
+<span class="comment">     * 首个字节，0x81 = 10000001 </span>
+<span class="comment">     *对应的Fin 为1 opcode为001 mask 为0 </span>
+<span class="comment">     * 即表明 返回数据为txt文本已经结束并未使用掩码处理</span>
+<span class="comment">     */</span>
+    buf[<span class="number">0</span>] = <span class="number">0x81</span>  
+    <span class="comment">/**</span>
+<span class="comment">     * 根据真实数据长度设置payload_len位</span>
+<span class="comment">     */</span>        
+    <span class="keyword">if</span>(payload_len == <span class="number">2</span>){
+        buf[<span class="number">1</span>] = len
+    }<span class="keyword">else</span> <span class="keyword">if</span>(payload_len == <span class="number">4</span>){
+        buf[<span class="number">1</span>] = <span class="number">126</span>;
+        buf.writeUInt16BE(payload_len, <span class="number">2</span>);
+    }<span class="keyword">else</span> {
+        buf[<span class="number">1</span>] = <span class="number">127</span>;
+        buf.writeUInt32BE(payload_len &gt;&gt;&gt; <span class="number">32</span>, <span class="number">2</span>);
+        buf.writeUInt32BE(payload_len &amp; <span class="number">0xFFFFFFFF</span>, <span class="number">6</span>);
+    }  
+    buf.write(data, payload_len);
+    <span class="keyword">return</span> buf;
+}    
+</code></pre>
+<h4 id="心跳响应"><a href="#心跳响应" class="headerlink" title="心跳响应"></a>心跳响应</h4><p>当收到opcode 为 9时即ping请求，直接返回具有完全相同有效数据的pong即可。<br>Pings的opcode为0x9，pong是0xA，所以可以直接如下   </p>
+<pre><code class="js"><span class="comment">// ping请求</span>
+<span class="keyword">if</span>(opcode == <span class="number">9</span>){
+   <span class="built_in">console</span>.log(<span class="string">"ping相应"</span>);
+   <span class="comment">/**</span>
+<span class="comment">    * ping pong最大长度为125，所以可以直接拼接</span>
+<span class="comment">    * 前两位数据为10001010+数据长度</span>
+<span class="comment">    * 即传输完毕的pong响应，数据肯定小于125</span>
+<span class="comment">    */</span>
+    socke.write(Buffer.concat([<span class="keyword">new</span> Buffer([<span class="number">0x8A</span>, data.length]), data]))
+}
+</code></pre>
+<h2 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h2><p>至此，一个websocket服务器的简单实现就完成了<a href="https://github.com/xiaoxiangdaiyu/chartroom/blob/master/src/websocket/ws.js" target="_blank" rel="noopener">更多细节请查看</a>。当然成熟的websocket库处理各种情况是比较完善的，更推荐大家使用，这里只是简单实践，更多的是满足一下自己的好奇心，知其然，也要知其所以然，希望大家共同学习和进步</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/11/06/websocket/frame/" rel="next" title="实现一个websocket服务器-理论篇">
+                <i class="fa fa-chevron-left"></i> 实现一个websocket服务器-理论篇
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/12/17/domevent/" rel="prev" title="DOMContentLoaded、readystatechange、load、ready详谈">
+                DOMContentLoaded、readystatechange、load、ready详谈 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">felix.pan</p>
+              <p class="site-description motion-element" itemprop="description">潇湘待雨个人博客</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">16</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Websockt-基本通信流程"><span class="nav-number">1.</span> <span class="nav-text"><a href="#Websockt-&#x57FA;&#x672C;&#x901A;&#x4FE1;&#x6D41;&#x7A0B;" class="headerlink" title="Websockt &#x57FA;&#x672C;&#x901A;&#x4FE1;&#x6D41;&#x7A0B;"></a>Websockt &#x57FA;&#x672C;&#x901A;&#x4FE1;&#x6D41;&#x7A0B;</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#响应并处理握手"><span class="nav-number">2.</span> <span class="nav-text"><a href="#&#x54CD;&#x5E94;&#x5E76;&#x5904;&#x7406;&#x63E1;&#x624B;" class="headerlink" title="&#x54CD;&#x5E94;&#x5E76;&#x5904;&#x7406;&#x63E1;&#x624B;"></a>&#x54CD;&#x5E94;&#x5E76;&#x5904;&#x7406;&#x63E1;&#x624B;</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#客户端握手请求"><span class="nav-number">2.1.</span> <span class="nav-text"><a href="#&#x5BA2;&#x6237;&#x7AEF;&#x63E1;&#x624B;&#x8BF7;&#x6C42;" class="headerlink" title="&#x5BA2;&#x6237;&#x7AEF;&#x63E1;&#x624B;&#x8BF7;&#x6C42;"></a>&#x5BA2;&#x6237;&#x7AEF;&#x63E1;&#x624B;&#x8BF7;&#x6C42;</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#响应握手请求"><span class="nav-number">2.2.</span> <span class="nav-text"><a href="#&#x54CD;&#x5E94;&#x63E1;&#x624B;&#x8BF7;&#x6C42;" class="headerlink" title="&#x54CD;&#x5E94;&#x63E1;&#x624B;&#x8BF7;&#x6C42;"></a>&#x54CD;&#x5E94;&#x63E1;&#x624B;&#x8BF7;&#x6C42;</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#返回格式"><span class="nav-number">2.2.1.</span> <span class="nav-text"><a href="#&#x8FD4;&#x56DE;&#x683C;&#x5F0F;" class="headerlink" title="&#x8FD4;&#x56DE;&#x683C;&#x5F0F;"></a>&#x8FD4;&#x56DE;&#x683C;&#x5F0F;</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#解析数据"><span class="nav-number">2.3.</span> <span class="nav-text"><a href="#&#x89E3;&#x6790;&#x6570;&#x636E;" class="headerlink" title="&#x89E3;&#x6790;&#x6570;&#x636E;"></a>&#x89E3;&#x6790;&#x6570;&#x636E;</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#客户端发送帧格式"><span class="nav-number">2.3.1.</span> <span class="nav-text"><a href="#&#x5BA2;&#x6237;&#x7AEF;&#x53D1;&#x9001;&#x5E27;&#x683C;&#x5F0F;" class="headerlink" title="&#x5BA2;&#x6237;&#x7AEF;&#x53D1;&#x9001;&#x5E27;&#x683C;&#x5F0F;"></a>&#x5BA2;&#x6237;&#x7AEF;&#x53D1;&#x9001;&#x5E27;&#x683C;&#x5F0F;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#解析数据-1"><span class="nav-number">2.3.2.</span> <span class="nav-text"><a href="#&#x89E3;&#x6790;&#x6570;&#x636E;-1" class="headerlink" title="&#x89E3;&#x6790;&#x6570;&#x636E;"></a>&#x89E3;&#x6790;&#x6570;&#x636E;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#发送数据"><span class="nav-number">2.3.3.</span> <span class="nav-text"><a href="#&#x53D1;&#x9001;&#x6570;&#x636E;" class="headerlink" title="&#x53D1;&#x9001;&#x6570;&#x636E;"></a>&#x53D1;&#x9001;&#x6570;&#x636E;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#心跳响应"><span class="nav-number">2.3.4.</span> <span class="nav-text"><a href="#&#x5FC3;&#x8DF3;&#x54CD;&#x5E94;" class="headerlink" title="&#x5FC3;&#x8DF3;&#x54CD;&#x5E94;"></a>&#x5FC3;&#x8DF3;&#x54CD;&#x5E94;</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#结束语"><span class="nav-number">3.</span> <span class="nav-text"><a href="#&#x7ED3;&#x675F;&#x8BED;" class="headerlink" title="&#x7ED3;&#x675F;&#x8BED;"></a>&#x7ED3;&#x675F;&#x8BED;</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">felix.pan</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

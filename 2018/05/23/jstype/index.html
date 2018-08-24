@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="前言相信刚开始了解js的时候，都会遇到 2 ==’2’,但是 1+2 == 1+’2’为false的情况，这时候应该会是一脸懵逼的状态，不得不感慨js弱类型的灵活让人发指，隐式类型转换就是这么猝不及防。结合实际中的情况来看，有意或无意中涉及到隐式类型转换的情况还是很多的。既然要用到，就需要掌握其原理，知其然重要知其所以然更重要。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入js隐式类型转换">
+<meta property="og:url" content="http://xxdy.tech/2018/05/23/jstype/index.html">
+<meta property="og:site_name" content="雨打梨梦三村边">
+<meta property="og:description" content="前言相信刚开始了解js的时候，都会遇到 2 ==’2’,但是 1+2 == 1+’2’为false的情况，这时候应该会是一脸懵逼的状态，不得不感慨js弱类型的灵活让人发指，隐式类型转换就是这么猝不及防。结合实际中的情况来看，有意或无意中涉及到隐式类型转换的情况还是很多的。既然要用到，就需要掌握其原理，知其然重要知其所以然更重要。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://xxdy.tech/img/jstype/1.png">
+<meta property="og:image" content="http://xxdy.tech/img/jstype/2.png">
+<meta property="og:image" content="http://xxdy.tech/img/jstype/3.png">
+<meta property="og:updated_time" content="2018-08-24T07:48:19.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="深入js隐式类型转换">
+<meta name="twitter:description" content="前言相信刚开始了解js的时候，都会遇到 2 ==’2’,但是 1+2 == 1+’2’为false的情况，这时候应该会是一脸懵逼的状态，不得不感慨js弱类型的灵活让人发指，隐式类型转换就是这么猝不及防。结合实际中的情况来看，有意或无意中涉及到隐式类型转换的情况还是很多的。既然要用到，就需要掌握其原理，知其然重要知其所以然更重要。">
+<meta name="twitter:image" content="http://xxdy.tech/img/jstype/1.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://xxdy.tech/2018/05/23/jstype/"/>
+
+
+
+
+
+  <title>深入js隐式类型转换 | 雨打梨梦三村边</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">雨打梨梦三村边</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">潇湘待雨</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://xxdy.tech/2018/05/23/jstype/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="felix.pan">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="雨打梨梦三村边">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">深入js隐式类型转换</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-23T08:00:29+08:00">
+                2018-05-23
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>相信刚开始了解js的时候，都会遇到 2 ==’2’,但是 1+2 == 1+’2’为false的情况，这时候应该会是一脸懵逼的状态，不得不感慨js弱类型的灵活让人发指，隐式类型转换就是这么猝不及防。结合实际中的情况来看，有意或无意中涉及到隐式类型转换的情况还是很多的。既然要用到，就需要掌握其原理，知其然重要知其所以然更重要。<br>  <a id="more"></a></p>
+<h2 id="js的变量类型"><a href="#js的变量类型" class="headerlink" title="js的变量类型"></a>js的变量类型</h2><p>JavaScript 是弱类型语言，意味着JavaScript 变量没有预先确定的类型。<br>并且变量的类型是其值的类型。也就是说变量当前的类型由其值所决定,夸张点说上一秒种的string，下一秒可能就是个array了。此外当进行某些操作时，变量可以进行类型转换，我们主动进行的就是显式类型转换，另一种就是隐式类型转换了。例如:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a = <span class="string">'1'</span>;   </span><br><span class="line"><span class="keyword">typeof</span> a;<span class="comment">//string </span></span><br><span class="line"></span><br><span class="line">a =<span class="built_in">parseInt</span>(a); <span class="comment">//显示转换为number</span></span><br><span class="line"><span class="keyword">typeof</span> a  <span class="comment">//number   </span></span><br><span class="line"></span><br><span class="line">a == <span class="string">'1'</span> <span class="comment">//true</span></span><br></pre></td></tr></table></figure>
+<p>弱类型的特性在给我们带来便利的同时，也会给我们带来困扰。趋利避害，充分利用该特性的前提就是掌握类型转换的原理，下面一起看一下。  </p>
+<h2 id="js数据类型"><a href="#js数据类型" class="headerlink" title="js数据类型"></a>js数据类型</h2><p>老生常谈的两大类数据类型：   </p>
+<ol>
+<li>原始类型<br>Undefined、 Null、 String、 Number、 Boolean      </li>
+<li>引用类型<br>object<br>此外还有一个es6新增的Symbol，先不讨论它。对于这五类原始类型，突然提问可能想不全，没必要去死记硬背，可以想一下为否的常见变量及其对应值即可。   </li>
+</ol>
+<table>
+<thead>
+<tr>
+<th style="text-align:right">0</th>
+<th style="text-align:right">Number</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right">‘’</td>
+<td style="text-align:right">String</td>
+</tr>
+<tr>
+<td style="text-align:right">false</td>
+<td style="text-align:right">Boolean</td>
+</tr>
+<tr>
+<td style="text-align:right">null</td>
+<td style="text-align:right">Null</td>
+</tr>
+<tr>
+<td style="text-align:right">undefined</td>
+<td style="text-align:right">Undefined</td>
+</tr>
+</tbody>
+</table>
+<p>对于不同的数据格式转换规则是不同的，我们需要分别对待。   </p>
+<h2 id="转换规则"><a href="#转换规则" class="headerlink" title="转换规则"></a>转换规则</h2><p>既然是规范定义的规则，那就不要问为什么了，先大致看一下，争取记住。是在不行经常翻翻看看大佬的博客<a href="http://yanhaijing.com/es5/#about" target="_blank" rel="noopener">es5规范</a>。转换有下面这么几类，我们分别看一下具体规范。（这部分转换规则，完全可以跳过去，看到下面的实例再回头看应该更容易接受一些）  </p>
+<ul>
+<li>转换为原始值  </li>
+<li>转换为数字  </li>
+<li>转换为字符串    </li>
+</ul>
+<h3 id="ToPrimitive-转换为原始值"><a href="#ToPrimitive-转换为原始值" class="headerlink" title="ToPrimitive(转换为原始值)"></a>ToPrimitive(转换为原始值)</h3><p>ToPrimitive 运算符接受一个值，和一个可选的 期望类型 作参数。ToPrimitive 运算符把其值参数转换为非对象类型。如果对象有能力被转换为不止一种原语类型，可以使用可选的 期望类型 来暗示那个类型。根据下表完成转换<br><img src="http://xxdy.tech/img/jstype/1.png"> </p>
+<p>这段定义看起来有点枯燥。转换为原始值，其实就是针对引用数据的，其目的是转换为非对象类型。<br>如果已经是原始类型，当然就不做处理了<br>对于object，返回对应的原始类型，该原始类型是由期望类型决定的，期望类型其实就是我们传递的type。直接看下面比较清楚。<br>ToPrimitive方法大概长这么个样子具体如下。  </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* @obj 需要转换的对象</span></span><br><span class="line"><span class="comment">* @type 期望转换为的原始数据类型，可选</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line">ToPrimitive(obj,type)</span><br></pre></td></tr></table></figure>
+<p>type可以为number或者string，两者的执行顺序有一些差别<br><strong>string:</strong>   </p>
+<ol>
+<li>调用obj的toString方法，如果为原始值，则返回，否则下一步   </li>
+<li>调用obj的valueOf方法，后续同上</li>
+<li>抛出TypeError 异常</li>
+</ol>
+<p><strong>number:</strong>    </p>
+<ol>
+<li>调用obj的valueOf方法，如果为原始值，则返回，否则下一步   </li>
+<li>调用obj的toString方法，后续同上</li>
+<li>抛出TypeError 异常    </li>
+</ol>
+<p>其实就是调用方法先后，毕竟期望数据类型不同，如果是string当然优先调用toString。反之亦然。<br>当然type参数可以为空，这时候type的默认值会按照下面的规则设置    </p>
+<ol>
+<li>该对象为Date，则type被设置为String  </li>
+<li>否则，type被设置为Number </li>
+</ol>
+<p>对于Date数据类型，我们更多期望获得的是其转为时间后的字符串，而非毫秒值，如果为number，则会取到对应的毫秒值，显然字符串使用更多。<br>其他类型对象按照取值的类型操作即可。  </p>
+<p>概括而言，ToPrimitive转成何种原始类型，取决于type，type参数可选，若指定，则按照指定类型转换，若不指定，默认根据实用情况分两种情况，Date为string，其余对象为number。那么什么时候会指定type类型呢，那就要看下面两种转换方式了。  </p>
+<h3 id="toNumber"><a href="#toNumber" class="headerlink" title="toNumber"></a>toNumber</h3><p>某些特定情况下需要用到ToNumber方法来转成number<br>运算符根据下表将其参数转换为数值类型的值<br><img src="http://xxdy.tech/img/jstype/2.png">    </p>
+<p>对于string类型，情况比较多，只要掌握常见的就行了。和直接调用Number(str)的结果一致，这里就不多提了，主要是太多提不完。<br>需要注意的是，这里调用ToPrimitive的时候，type就指定为number了。下面的toString则为string。</p>
+<h3 id="toString-NaN"><a href="#toString-NaN" class="headerlink" title="toString"></a>toString</h3><p>ToString 运算符根据下表将其参数转换为字符串类型的值：<br>其实了解也很简单，毕竟是个规范，借用大佬一张图：<br><img src="http://xxdy.tech/img/jstype/3.png"> </p>
+<p>虽然是需要死记的东西，还是有些规律可循的。<br>对于原始值：  </p>
+<ul>
+<li>Undefined，null，boolean<br>直接加上引号，例如’null’ </li>
+<li>number 则有比较长的规范,毕竟范围比较大<br>常见的就是 ‘1’   NaN则为’NaN’  基本等同于上面一条<br>对于负数，则返回-+字符串 例如 ‘-2’  其他的先不考虑了。   </li>
+<li>对象则是先转为原始值，再按照上面的步骤进行处理。   </li>
+</ul>
+<h3 id="valueOf-NaN"><a href="#valueOf-NaN" class="headerlink" title="valueOf"></a>valueOf</h3><p>当调用 valueOf 方法，采用如下步骤：</p>
+<ol>
+<li>调用ToObject方法得到一个对象O</li>
+<li>原始数据类型转换为对应的内置对象， 引用类型则不变 </li>
+<li>调用该对象(O)内置valueOf方法.</li>
+</ol>
+<p>不同内置对象的valueOf实现：</p>
+<ul>
+<li>String =&gt; 返回字符串值</li>
+<li>Number =&gt; 返回数字值  </li>
+<li>Date =&gt; 返回一个数字，即时间值,字符串中内容是依赖于具体实现的</li>
+<li>Boolean =&gt; 返回Boolean的this值</li>
+<li>Object =&gt; 返回this  </li>
+</ul>
+<p>对照代码更清晰一点    </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> str = <span class="keyword">new</span> <span class="built_in">String</span>(<span class="string">'123'</span>)</span><br><span class="line"><span class="comment">//123</span></span><br><span class="line"><span class="built_in">console</span>.log(str.valueOf())</span><br><span class="line"><span class="keyword">var</span> num = <span class="keyword">new</span> <span class="built_in">Number</span>(<span class="number">123</span>)</span><br><span class="line"><span class="comment">//123</span></span><br><span class="line"><span class="built_in">console</span>.log(num.valueOf())</span><br><span class="line"><span class="keyword">var</span> date = <span class="keyword">new</span> <span class="built_in">Date</span>()</span><br><span class="line"><span class="comment">//1526990889729</span></span><br><span class="line"><span class="built_in">console</span>.log(date.valueOf())</span><br><span class="line"><span class="keyword">var</span> bool = <span class="keyword">new</span> <span class="built_in">Boolean</span>(<span class="string">'123'</span>)</span><br><span class="line"><span class="comment">//true</span></span><br><span class="line"><span class="built_in">console</span>.log(bool.valueOf())</span><br><span class="line"><span class="keyword">var</span> obj = <span class="keyword">new</span> <span class="built_in">Object</span>(&#123;<span class="attr">valueOf</span>:<span class="function"><span class="params">()</span>=&gt;</span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span></span><br><span class="line">&#125;&#125;)</span><br><span class="line"><span class="comment">//依赖于内部实现</span></span><br><span class="line"><span class="built_in">console</span>.log(obj.valueOf())</span><br></pre></td></tr></table></figure>
+<h2 id="运算隐式转换"><a href="#运算隐式转换" class="headerlink" title="运算隐式转换"></a>运算隐式转换</h2><p>前面提了那么多抽象概念，就是为了这里来理解具体转换的。<br>对于+运算来说，规则如下：  </p>
+<ul>
+<li>+号左右分别进行取值，进行ToPrimitive()操作</li>
+<li>分别获取左右转换之后的值，如果存在String，则对其进行ToString处理后进行拼接操作。</li>
+<li>其他的都进行ToNumber处理</li>
+<li>在转换时ToPrimitive，除去Date为string外都按照ToPrimitive type为Number进行处理<br>说的自己都迷糊了快，一起结合代码来看一下   </li>
+</ul>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span>+<span class="string">'2'</span>+<span class="literal">false</span></span><br></pre></td></tr></table></figure>
+<ol>
+<li>左边取原始值，依旧是Number</li>
+<li>中间为String，则都进行toString操作  </li>
+<li>左边转换按照toString的规则，返回’1’</li>
+<li>得到结果temp值’12’</li>
+<li>右边布尔值和temp同样进行1步骤</li>
+<li>temp为string，则布尔值也转为string’false’</li>
+<li>拼接两者 得到最后结果 ‘12false’</li>
+</ol>
+<p>我们看一个复杂的</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> obj1 = &#123;</span><br><span class="line">    valueOf:<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">var</span> obj2 = &#123;</span><br><span class="line">    toString:<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">'a'</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//2</span></span><br><span class="line"><span class="built_in">console</span>.log(<span class="number">1</span>+obj1)</span><br><span class="line"><span class="comment">//1a</span></span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">'1'</span>+ obj2)</span><br><span class="line"><span class="comment">//1a</span></span><br><span class="line"><span class="built_in">console</span>.log(obj1+obj2)</span><br></pre></td></tr></table></figure>
+<p>不管多复杂，按照上面的顺序来吧。  </p>
+<ul>
+<li>1+obj1      <ol>
+<li>左边就不说了，number</li>
+<li>右边obj转为基础类型，按照type为number进行</li>
+<li>先调用valueOf() 得到结果为1</li>
+<li>两遍都是number，则进行相加得到2  </li>
+</ol>
+</li>
+<li>1+obj2  <ol>
+<li>左边为number </li>
+<li>右边同样按照按照type为number进行转化</li>
+<li>调用obj2.valueOf()得到的不是原始值</li>
+<li>调用toString() return ‘a’</li>
+<li>依据第二条规则，存在string，则都转换为string进行拼接</li>
+<li>得到结果1a</li>
+</ol>
+</li>
+<li>obj1+obj2  <ol>
+<li>两边都是引用，进行转换 ToPrimitive 默认type为number</li>
+<li>obj1.valueOf()为1 直接返回</li>
+<li>obj2.valueOf()得到的不是原始值</li>
+<li>调用toString() return ‘a’</li>
+<li>依据第二条规则，存在string，则都转换为string进行拼接</li>
+<li>得到结果1a </li>
+</ol>
+</li>
+</ul>
+<p>到这里相信大家对+这种运算的类型转换了解的差不多了。下面就看一下另一种隐式类型转换  </p>
+<h3 id="抽象相等比较"><a href="#抽象相等比较" class="headerlink" title="== 抽象相等比较"></a>== 抽象相等比较</h3><p>这种比较分为两大类，</p>
+<ul>
+<li>类型相同</li>
+<li>类型不同<br>相同的就不说了,隐式转换发生在不同类型之间。规律比较复杂，规范比较长，这里也不列举了，<a href="http://yanhaijing.com/es5/#104" target="_blank" rel="noopener">大家可以查看抽象相等算法</a>。简单总结一句，相等比较就不想+运算那样string优先了，是以number优先级为最高。概括而言就是，都尽量转成number来进行处理，这样也可以理解，毕竟比较还是期望比较数值。那么规则大概如下：<br>对于x == y</li>
+</ul>
+<ol>
+<li><p>如果x,y均为number，直接比较</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">没什么可解释的了</span><br><span class="line"><span class="number">1</span> == <span class="number">2</span> <span class="comment">//false</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>如果存在对象，ToPrimitive() type为number进行转换，再进行后面比较</p>
+ <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> obj1 = &#123;</span><br><span class="line">    valueOf:<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">'1'</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="number">1</span> == obj2  <span class="comment">//true</span></span><br><span class="line"><span class="comment">//obj1转为原始值，调用obj1.valueOf()</span></span><br><span class="line"><span class="comment">//返回原始值'1'</span></span><br><span class="line"><span class="comment">//'1'toNumber得到 1 然后比较 1 == 1</span></span><br><span class="line">[] == ![] <span class="comment">//true</span></span><br><span class="line"><span class="comment">//[]作为对象ToPrimitive得到 ''  </span></span><br><span class="line"><span class="comment">//![]作为boolean转换得到0 </span></span><br><span class="line"><span class="comment">//'' == 0 </span></span><br><span class="line"><span class="comment">//转换为 0==0 //true</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>存在boolean，按照ToNumber将boolean转换为1或者0，再进行后面比较   </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//boolean 先转成number，按照上面的规则得到1  </span></span><br><span class="line"><span class="comment">//3 == 1 false</span></span><br><span class="line"><span class="comment">//0 == 0 true</span></span><br><span class="line"><span class="number">3</span> == <span class="literal">true</span> <span class="comment">// false</span></span><br><span class="line"><span class="string">'0'</span> == <span class="literal">false</span> <span class="comment">//true</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>如果x为string，y为number，x转成number进行比较</p>
+ <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//'0' toNumber()得到 0  </span></span><br><span class="line"><span class="comment">//0 == 0 true</span></span><br><span class="line"><span class="string">'0'</span> == <span class="number">0</span> <span class="comment">//true</span></span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h2 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h2><h4 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h4><p><a href="http://yanhaijing.com/es5/#101" target="_blank" rel="noopener">ECMAScript5.1中文版 + ECMAScript3 + ECMAScript（合集）</a><br><a href="https://mp.weixin.qq.com/s?__biz=MjM5MTA1MjAxMQ==&amp;mid=2651227769&amp;idx=1&amp;sn=617160e64d2be13169b1b8f4506d8801&amp;chksm=bd495ffd8a3ed6eb226d4ef193ff2ce3958d2d03d1f3047b635915f8215af40996c2f64d5c20&amp;scene=21#wechat_redirect" target="_blank" rel="noopener">你所忽略的js隐式转换</a><br>这篇文章的本意是为自己解惑，写到后面真的感觉比较乏味，毕竟规范性的东西多一点，不过深入了解一下总好过死记硬背。<a href="https://github.com/xiaoxiangdaiyu/blog" target="_blank" rel="noopener">原文请移步我的博客</a>。对于有些观点说这些属于js糟粕，完全不应该深入，怎么说呢，结合自己情况判断吧。本人水平有限，抛砖引玉共同学习。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/05/15/bfc/" rel="next" title="由清除float原理到BFC">
+                <i class="fa fa-chevron-left"></i> 由清除float原理到BFC
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/06/01/babelplugin/" rel="prev" title="编写一个babel插件">
+                编写一个babel插件 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">felix.pan</p>
+              <p class="site-description motion-element" itemprop="description">潇湘待雨个人博客</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">16</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text"><a href="#&#x524D;&#x8A00;" class="headerlink" title="&#x524D;&#x8A00;"></a>&#x524D;&#x8A00;</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#js的变量类型"><span class="nav-number">2.</span> <span class="nav-text"><a href="#js&#x7684;&#x53D8;&#x91CF;&#x7C7B;&#x578B;" class="headerlink" title="js&#x7684;&#x53D8;&#x91CF;&#x7C7B;&#x578B;"></a>js&#x7684;&#x53D8;&#x91CF;&#x7C7B;&#x578B;</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#js数据类型"><span class="nav-number">3.</span> <span class="nav-text"><a href="#js&#x6570;&#x636E;&#x7C7B;&#x578B;" class="headerlink" title="js&#x6570;&#x636E;&#x7C7B;&#x578B;"></a>js&#x6570;&#x636E;&#x7C7B;&#x578B;</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#转换规则"><span class="nav-number">4.</span> <span class="nav-text"><a href="#&#x8F6C;&#x6362;&#x89C4;&#x5219;" class="headerlink" title="&#x8F6C;&#x6362;&#x89C4;&#x5219;"></a>&#x8F6C;&#x6362;&#x89C4;&#x5219;</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#ToPrimitive-转换为原始值"><span class="nav-number">4.1.</span> <span class="nav-text"><a href="#ToPrimitive-&#x8F6C;&#x6362;&#x4E3A;&#x539F;&#x59CB;&#x503C;" class="headerlink" title="ToPrimitive(&#x8F6C;&#x6362;&#x4E3A;&#x539F;&#x59CB;&#x503C;)"></a>ToPrimitive(&#x8F6C;&#x6362;&#x4E3A;&#x539F;&#x59CB;&#x503C;)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#toNumber"><span class="nav-number">4.2.</span> <span class="nav-text"><a href="#toNumber" class="headerlink" title="toNumber"></a>toNumber</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#toString-NaN"><span class="nav-number">4.3.</span> <span class="nav-text"><a href="#toString-NaN" class="headerlink" title="toString"></a>toString</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#valueOf-NaN"><span class="nav-number">4.4.</span> <span class="nav-text"><a href="#valueOf-NaN" class="headerlink" title="valueOf"></a>valueOf</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#运算隐式转换"><span class="nav-number">5.</span> <span class="nav-text"><a href="#&#x8FD0;&#x7B97;&#x9690;&#x5F0F;&#x8F6C;&#x6362;" class="headerlink" title="&#x8FD0;&#x7B97;&#x9690;&#x5F0F;&#x8F6C;&#x6362;"></a>&#x8FD0;&#x7B97;&#x9690;&#x5F0F;&#x8F6C;&#x6362;</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#抽象相等比较"><span class="nav-number">5.1.</span> <span class="nav-text"><a href="#&#x62BD;&#x8C61;&#x76F8;&#x7B49;&#x6BD4;&#x8F83;" class="headerlink" title="== &#x62BD;&#x8C61;&#x76F8;&#x7B49;&#x6BD4;&#x8F83;"></a>== &#x62BD;&#x8C61;&#x76F8;&#x7B49;&#x6BD4;&#x8F83;</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#结束语"><span class="nav-number">6.</span> <span class="nav-text"><a href="#&#x7ED3;&#x675F;&#x8BED;" class="headerlink" title="&#x7ED3;&#x675F;&#x8BED;"></a>&#x7ED3;&#x675F;&#x8BED;</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#参考文章"><span class="nav-number">6.0.1.</span> <span class="nav-text"><a href="#&#x53C2;&#x8003;&#x6587;&#x7AE0;" class="headerlink" title="&#x53C2;&#x8003;&#x6587;&#x7AE0;"></a>&#x53C2;&#x8003;&#x6587;&#x7AE0;</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">felix.pan</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

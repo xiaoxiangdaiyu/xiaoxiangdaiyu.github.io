@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="一、传统web 应用当前web应用在移动时代并没有达到其在桌面设备上流行的程度，下面有张图来对比与原生应用之间的差别。究其原因，无外乎下面不可避免的几点：  移动设备网络限制-不可忽略的加载时间  web应用依赖于浏览器作为入口   体验与原生的差距">
+<meta property="og:type" content="article">
+<meta property="og:title" content="前端er应该了解的PWA">
+<meta property="og:url" content="http://xxdy.tech/2018/05/09/pwa/index.html">
+<meta property="og:site_name" content="雨打梨梦三村边">
+<meta property="og:description" content="一、传统web 应用当前web应用在移动时代并没有达到其在桌面设备上流行的程度，下面有张图来对比与原生应用之间的差别。究其原因，无外乎下面不可避免的几点：  移动设备网络限制-不可忽略的加载时间  web应用依赖于浏览器作为入口   体验与原生的差距">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://xxdy.tech/img/pwa/1.png">
+<meta property="og:image" content="http://xxdy.tech/img/pwa/2.png">
+<meta property="og:image" content="http://xxdy.tech/img/pwa/3.png">
+<meta property="og:image" content="http://xxdy.tech/img/pwa/4.png">
+<meta property="og:updated_time" content="2018-08-24T07:48:19.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="前端er应该了解的PWA">
+<meta name="twitter:description" content="一、传统web 应用当前web应用在移动时代并没有达到其在桌面设备上流行的程度，下面有张图来对比与原生应用之间的差别。究其原因，无外乎下面不可避免的几点：  移动设备网络限制-不可忽略的加载时间  web应用依赖于浏览器作为入口   体验与原生的差距">
+<meta name="twitter:image" content="http://xxdy.tech/img/pwa/1.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://xxdy.tech/2018/05/09/pwa/"/>
+
+
+
+
+
+  <title>前端er应该了解的PWA | 雨打梨梦三村边</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">雨打梨梦三村边</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">潇湘待雨</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://xxdy.tech/2018/05/09/pwa/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="felix.pan">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="雨打梨梦三村边">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">前端er应该了解的PWA</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-09T00:00:00+08:00">
+                2018-05-09
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="一、传统web-应用"><a href="#一、传统web-应用" class="headerlink" title="一、传统web 应用"></a>一、传统web 应用</h2><p>当前web应用在移动时代并没有达到其在桌面设备上流行的程度，下面有张图来对比与原生应用之间的差别。<br><img src="/img/pwa/1.png"><br>究其原因，无外乎下面不可避免的几点：</p>
+<ul>
+<li>移动设备网络限制-不可忽略的加载时间 </li>
+<li>web应用依赖于浏览器作为入口  </li>
+<li><p>体验与原生的差距 </p>
+<a id="more"></a>
+<p>假如能解决以上的几点，对web app 来说会有多大的提升可以想象。</p>
+<h2 id="二、PWA是什么"><a href="#二、PWA是什么" class="headerlink" title="二、PWA是什么"></a>二、PWA是什么</h2><p>PWA 全称Progressive Web Apps(渐进式Web应用程序)，旨在使用现有的web技术提供用户更优的使用体验。<br>基本要求    </p>
+</li>
+<li><p>可靠（Reliable）<br>  即使在不稳定的网络环境下，也能瞬间加载并展现</p>
+</li>
+<li>快速响应（Fast）<br>  快速响应，并且有平滑的动画响应用户的操作</li>
+<li>粘性(Engaging)<br>  像设备上的原生应用，具有沉浸式的用户体验，用户可以添加到桌面   </li>
+</ul>
+<p>PWA 本身强调渐进式，并不要求一次性达到安全、性能和体验上的所有要求，开发者可以通过 PWA Checklist 查看现有的特征。  </p>
+<p>除以上的基准要求外，还应该包括以下特性：  </p>
+<ul>
+<li>渐进式 - 适用于所有浏览器，因为它是以渐进式增强作为宗旨开发的</li>
+<li>连接无关性 - 能够借助 Service Worker 在离线或者网络较差的情况下正常访问</li>
+<li>类似应用 - 由于是在 App Shell 模型基础上开发，因为应具有 Native App 的交互和导航，给用户 Native App 的体验</li>
+<li>持续更新 - 始终是最新的，无版本和更新问题</li>
+<li>安全 - 通过 HTTPS 协议提供服务，防止窥探和确保内容不被篡改</li>
+<li>可索引 - 应用清单文件和 Service Worker 可以让搜索引擎索引到，从而将其识别为『应用』</li>
+<li>粘性 - 通过推送离线通知等，可以让用户回流</li>
+<li>可安装 - 用户可以添加常用的 webapp 到桌面，免去去应用商店下载的麻烦</li>
+<li>可链接 - 通过链接即可分享内容，无需下载安装  </li>
+</ul>
+<p>看起来有点眼花缭乱，这又是一个新的飞起的轮子吗？这里重申一下,PWA背后不是一种新的技术，而是集合当前多种web技术的一种集合。分别利用各自的功能来完成渐进式的整体需求。下面就沿着前面提出的问题分别了解一下相关技术  </p>
+<h2 id="三、技术组成"><a href="#三、技术组成" class="headerlink" title="三、技术组成"></a>三、技术组成</h2><p>由以下几种技术构成：  </p>
+<ul>
+<li>App Manifest</li>
+<li>Service Worker</li>
+<li>Notifications API</li>
+<li>Push API  </li>
+</ul>
+<p>其中Service Worker是PWA技术的关键，它们可以让app满足上面的三基准。其他技术则是锦上添花，让app更加的强大。 </p>
+<h3 id="3-1-service-worker背景"><a href="#3-1-service-worker背景" class="headerlink" title="3.1 service worker背景"></a>3.1 service worker背景</h3><h4 id="离线缓存背景"><a href="#离线缓存背景" class="headerlink" title="离线缓存背景"></a>离线缓存背景</h4><p>针对网页的体验，从前到后都做了很多努力，极力去降低响应时间，这里就不表述多样的技术手段。<br>另一个方向的就是缓存，减少与服务器非必要的交互，不过对于离线的情况下浏览器缓存就无力了，<br>这样离线缓存的需求就出现了。</p>
+<h4 id="离线缓存的历程"><a href="#离线缓存的历程" class="headerlink" title="离线缓存的历程"></a>离线缓存的历程</h4><p>web应用在离线缓存发展的过程中也不是一簇而就的，经历了逐渐完善的过程。<br>初期的解决方案是AppCache(原来阿波罗的h5接入过)<br> 然而，事实证明这是一个失败的尝试，缺陷太多，已经被废弃了。具体可以查看Application Cache is a douchebag<br>但是方向还是正确的，那就继续孜孜不倦的探索。</p>
+<h4 id="workers"><a href="#workers" class="headerlink" title="workers"></a>workers</h4><p>持久化先放一边，来谈谈另一个问题<br>基于浏览器中的 javaScript 单线程的现实逐渐不能满足现代web需求的现状,例如耗时的计算，用户的交互显然会受影响。<br>为了将这些耗时操作从主线程中解放出来，早期W3C新增了一个Web Worker 的 API，可以脱离主线程单独执行，并且可以与主线程交互。<br>不过Web Worker是临时性的依赖于创建页面 ，不能满足我们持久化的需求。<br>冲着这个目标，下面就比较容易解决了，搞个能持久存在的就行了。<br>在Web Worker的基础上，W3C新增了service worker来满足我们持久化的需求。<br>其生命周期与页面无关，关联页面未关闭时，它也可以退出，没有关联页面时，它也可以启动<br>功能  </p>
+<p>Service Worker虽然满足了离线缓存来，其功能可不仅仅局限于此。  可以提供  </p>
+<ul>
+<li>丰富的离线体验，</li>
+<li>周期的后台同步，</li>
+<li>消息推送通知，</li>
+<li>拦截和处理网络请求，</li>
+<li>管理资源缓存<br>这些正好也是PWA的目的，所以说Service Worker是PWA的关键技术。 <h4 id="前提条件"><a href="#前提条件" class="headerlink" title="前提条件"></a>前提条件</h4>Service Worker 出于安全性和其实现原理，在使用的时候有一定的前提条件。</li>
+<li>由于 Service Worker 要求 HTTPS 的环境<br>  当然一般浏览器允许调试 Service Worker 的时候 host 为 localhost 或者 127.0.0.1 </li>
+<li>Service Worker 的缓存机制是依赖 Cache API (略过)</li>
+<li>依赖 HTML5 fetch API（略过）</li>
+<li><p>依赖 Promise 实现<br>由上可知，不是所有的浏览器都支持的，支持情况大概如下：  </p>
+<p><img src="/img/pwa/2.png"><br>iOS 内的所有的浏览器都基于 safari，所以iOS要在11.3以上<br>IE是放弃支持了，不过Edge好歹支持了。     </p>
+<h3 id="3-2-Cache"><a href="#3-2-Cache" class="headerlink" title="3.2 Cache"></a>3.2 Cache</h3></li>
+</ul>
+<p>Cache是Service Worker衍生出来的API，配合Service Worker实现对资源请求的缓存。<br>不过cache并不直接缓存字符串，而是直接缓存资源请求（css、js、html等）。<br>cache也是key-value形式，一般来说key就是request，value就是response   </p>
+<ul>
+<li>caches.open(cacheName) 打开一个cache   </li>
+<li>caches是global对象，返回一个带有cache返回值的Promise</li>
+<li>cache.keys() 遍历cache中所有键，得到value的集合</li>
+<li>cache.match(Request|url) 在cache中匹配传入的request，返回Promise；  </li>
+<li>cache.matchAll只有第一个参数与match不同，需要一个request的数组，当然返回的结果也是response的数组</li>
+<li>cache.add(Request|url) 并不是单纯的add，因为传入的是request或者url，在cache.add内部会自动去调用fetch取回request的请求结果，然后才是把response存入cache；</li>
+<li>cache.addAll类似，通常在sw install的时候用cache.addAll把所有需要缓存的文件都请求一遍</li>
+<li>cache.put(Request, Response) 这个相当于cache.add的第二步，即fetch到response后存入cache</li>
+<li>cache.delete(Request|url) 删除缓存     </li>
+</ul>
+<h3 id="3-3-注册Service-Worker"><a href="#3-3-注册Service-Worker" class="headerlink" title="3.3 注册Service Worker"></a>3.3 注册Service Worker</h3><p>注册即声明sw文件的位置，显然应该在主js中引入。大概如下：  </p>
+<pre><code class="js"><span class="comment">//基于promise</span>
+<span class="function"><span class="keyword">function</span> <span class="title">registerServiceWorker</span>(<span class="params"></span>)</span>{
+    <span class="comment">// 注册service worker</span>
+    <span class="keyword">return</span> navigator.serviceWorker.register(<span class="string">'./sw1.js'</span>).then(<span class="function"><span class="params">registration</span> =&gt;</span> {
+        <span class="built_in">console</span>.log(<span class="string">'注册成功'</span>);
+        <span class="comment">// 返回</span>
+        <span class="keyword">return</span> registration;
+    })
+    .catch(<span class="function"><span class="params">err</span> =&gt;</span> {
+        <span class="built_in">console</span>.error(<span class="string">'注册失败'</span>, err);
+    });
+}
+<span class="built_in">window</span>.onload = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>{
+    <span class="comment">//是否支持</span>
+    <span class="keyword">if</span> (!(<span class="string">'serviceWorker'</span> <span class="keyword">in</span> navigator)) {
+        <span class="keyword">return</span>;
+    }
+    registerServiceWorker()
+}
+</code></pre>
+<h3 id="3-4-生命周期"><a href="#3-4-生命周期" class="headerlink" title="3.4 生命周期"></a>3.4 生命周期</h3><p>Service worker 有一个独立于web 页面的生命周期。<br>如果在网站上安装 serice worker ，你需要注册，注册后浏览器会在后台安装 service worker。然后进入下面的不同阶段。<br>激活之后，service worker 将控制所有的页面，纳入它的范围，不过第一次在页面注册 service worker 时不会控制页面，直到它再次加载。<br> service worker 生效之后,它会处于下面两种状态之一：  </p>
+<ul>
+<li>service worker 终止来节省内存，</li>
+<li>页面发起网络请求后，它将处理请求获取和消息事件。  </li>
+</ul>
+<p>由上图看知，分为这么几个阶段：  </p>
+<ul>
+<li>Installing   <pre><code>发生在 Service Worker 注册之后，表示开始安装，触发 install 事件回调指定一些静态资源进行离线缓存 
+</code></pre></li>
+<li>Installed<pre><code>Service Worker 已经完成了安装，并且等待其他的 Service Worker 线程被关闭。
+</code></pre></li>
+<li>Activating <pre><code>在这个状态下没有被其他的 Service Worker 控制的客户端，允许当前的 worker 完成安装
+</code></pre></li>
+<li>Activated   <pre><code>在这个状态会处理 activate 事件回调 (提供了更新缓存策略的机会)。并可以处理功能性的事件 fetch (请求)、sync (后台同步)、push (推送)
+</code></pre></li>
+<li>Redundant<pre><code>被替换，即被销毁  
+</code></pre></li>
+</ul>
+<p>了解声明周期其实是为了我们在不同时间段去监听事件来完成相应操作。对PWA来说主要两个事件。</p>
+<ul>
+<li>install 事件回调：</li>
+</ul>
+<p>event.waitUntil()：传入一个 Promise 为参数，等到该 Promise 为 resolve 状态为止。<br>self.skipWaiting()：self 是当前 context 的 global 变量，执行该方法表示强制当前处在 waiting 状态的 Service Worker 进入 activate 状态。</p>
+<ul>
+<li>activate 回调：</li>
+</ul>
+<p>event.waitUntil()：传入一个 Promise 为参数，等到该 Promise 为 resolve 状态为止。<br>self.clients.claim()：在 activate 事件回调中执行该方法表示取得页面的控制权, 这样之后打开页面都会使用版本更新的缓存。旧的 Service Worker 脚本不再控制着页面，之后会被停止。   </p>
+<pre><code class="js"><span class="keyword">const</span> CURCACHE = <span class="string">'CURCACHE_test_1'</span>
+<span class="keyword">const</span> RUNTIME = <span class="string">'runtime'</span>;
+<span class="keyword">const</span> CURCACHE_URLS = [
+    <span class="string">'./'</span>,
+    <span class="string">'/asset/sw.jpg'</span>,
+    <span class="string">'index.js'</span>
+]
+self.addEventListener(<span class="string">'install'</span>,e=&gt;{
+    e.waitUntil(
+      <span class="comment">//存储缓存路径对应的资源</span>
+        caches.open(CURCACHE).then(<span class="function"><span class="params">cache</span>=&gt;</span>{
+            cache.addAll(CURCACHE_URLS)
+        }).then(
+            self.skipWaiting()
+        )
+    )
+})  
+  <span class="comment">//代理请求，使用缓存，请求发送之前</span>
+  self.addEventListener(<span class="string">'fetch'</span>, e =&gt; {
+    e.respondWith(
+      <span class="comment">//缓存是否匹配 </span>
+      caches.match(e.request).then(<span class="function"><span class="keyword">function</span>(<span class="params">response</span>) </span>{
+        <span class="keyword">if</span> (response != <span class="literal">null</span>) {
+          <span class="comment">//命中缓存返回缓存，结束请求</span>
+          <span class="keyword">return</span> response
+        }
+        <span class="comment">//未命中缓存，正常请求</span>
+        <span class="keyword">return</span> fetch(e.request.url)
+      })
+    )
+  });
+</code></pre>
+<h4 id="更新service-worker"><a href="#更新service-worker" class="headerlink" title="更新service worker"></a>更新service worker</h4><p>service worker 更新步骤如下：   </p>
+<ul>
+<li>更新 service worker 的文件   <pre><code>网页打开时服务器会进行对比，保持最新  
+</code></pre></li>
+<li>新的 service worker 启动install</li>
+<li>当前页面生效的依然是老的service worker，新的 service worker 会进入 “waiting” 状态。</li>
+<li>页面关闭之后，老的 service worker 会被干掉，新的 servicer worker 接管页面</li>
+<li>新的 service worker 生效后会触发 activate 事件  </li>
+</ul>
+<pre><code class="js"><span class="keyword">const</span> CURCACHE = <span class="string">'precache_test_1'</span>
+<span class="comment">//假设上个版本的key为precache_test_2 反正不等于CURCACHE</span>
+self.addEventListener(<span class="string">'activate'</span>, e =&gt; {
+  e.waitUntil(
+      <span class="comment">//遍历当前缓存keys</span>
+      caches.keys().then(<span class="function"><span class="params">cacheNames</span>=&gt;</span>{
+        <span class="keyword">return</span> <span class="built_in">Promise</span>.all(
+          cacheNames.map(<span class="function"><span class="keyword">function</span>(<span class="params">cacheName</span>) </span>{
+            <span class="comment">//是否等于当前key,保留自己</span>
+            <span class="keyword">if</span> (cacheName !== CURCACHE) {
+              <span class="keyword">return</span> caches.delete(cacheName);
+            }
+          })
+    )}).then(<span class="function"><span class="params">()</span> =&gt;</span> self.clients.claim())
+ )
+}) 
+</code></pre>
+<p>这样一个简单的service worker离线缓存完成了。控制台可以看到，来源是service worker  </p>
+<p><img src="/img/pwa/3.png"><br>关闭网络之后再次访问，可以同样得到上面的结果，并且sw.js请求未能拿到，但是不影响，旧的文件依然在，这里证明了每次都回去对比sw文件以确保更新<br><img src="/img/pwa/4.png"><br>到这里，离线缓存就实现了。   </p>
+<h2 id="四、添加到主屏幕"><a href="#四、添加到主屏幕" class="headerlink" title="四、添加到主屏幕"></a>四、添加到主屏幕</h2><p>允许将站点添加至主屏幕，是 PWA 提供的一项重要功能。这样就不用再依赖于浏览器作为平台，符合移动端的用户习惯。  </p>
+<h3 id="manifest-json"><a href="#manifest-json" class="headerlink" title="manifest.json"></a>manifest.json</h3><p>需要 manifest.json 文件去配置应用的图标、名称等基本信息如下：</p>
+<pre><code class="js">{
+    <span class="comment">//被提示安装应用时出现的文本</span>
+    <span class="string">"name"</span>: <span class="string">"PQJ-PWA"</span>,
+    <span class="comment">//添加至主屏幕后的文本</span>
+    <span class="string">"short_name"</span>:<span class="string">"PQJ"</span>,
+    <span class="string">"description"</span>: <span class="string">"测试demo"</span>,
+    <span class="comment">//添加之后，启动地址</span>
+    <span class="string">"start_url"</span>: <span class="string">"/index.html"</span>,
+    <span class="comment">//图标信息</span>
+    <span class="string">"icons"</span>: {
+      <span class="string">"128"</span>: <span class="string">"/asset/sw.jpg"</span>
+    },
+    <span class="string">"developer"</span>: {
+      <span class="string">"name"</span>: <span class="string">"pqj"</span>,
+      <span class="string">"url"</span>: <span class="string">""</span>
+    },
+    <span class="string">"display"</span>: <span class="string">"standalone"</span>,
+    <span class="string">"background_color"</span>: <span class="string">"#287fc5"</span>,
+    <span class="string">"theme_color"</span>: <span class="string">"#fff"</span>,
+    <span class="string">"permissions"</span>: {
+        <span class="string">"desktop-notification"</span>: {
+          <span class="string">"description"</span>: <span class="string">"Needed for creating system notifications."</span>
+        }
+      }
+}  
+</code></pre>
+<p>然后以如下方式在html中引入</p>
+<pre><code class="js">&lt;link rel=<span class="string">"manifest"</span> href=<span class="string">"/mainfest.json"</span> /&gt;
+</code></pre>
+<p>这样完成之后，移动端安卓使用chrome(亲测),首次访问时会提示是否允许安装到主屏幕，以应用icon的形式出现。<br>图片和文字即由配置决定。  </p>
+<h3 id="五、消息通知"><a href="#五、消息通知" class="headerlink" title="五、消息通知"></a>五、消息通知</h3><p>消息通知也是使用service worker的通知功能进行的，允许服务器想用户发生通知，而非用户主动请求才去响应某些行为。<br>正常的通知逻辑需要服务器来参与实现，这次展示只实现功能。   </p>
+<ul>
+<li>首先申请通知权限</li>
+<li>注册service worker </li>
+<li>处理逻辑，发送通知  </li>
+</ul>
+<pre><code class="js"><span class="function"><span class="keyword">function</span> <span class="title">getPermission</span>(<span class="params"></span>)</span>{
+    <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> {
+        <span class="comment">//权限获取</span>
+        <span class="keyword">const</span> permissionPromise = Notification.requestPermission(<span class="function"><span class="params">result</span> =&gt;</span> {
+            resolve(result);
+        });
+    }).then(<span class="function"><span class="params">result</span> =&gt;</span> {
+            <span class="comment">//判断条件</span>
+            <span class="keyword">if</span> (result === <span class="string">'granted'</span>) {
+                execute();
+            }
+            <span class="keyword">else</span> {
+                <span class="built_in">console</span>.log(<span class="string">'no permission'</span>);
+            }
+        });
+} 
+</code></pre>
+<p>发送通知  </p>
+<pre><code class="js"><span class="function"><span class="keyword">function</span> <span class="title">execute</span>(<span class="params"></span>) </span>{
+    <span class="comment">// 允许之后执行</span>
+    registerServiceWorker().then(<span class="function"><span class="params">registration</span> =&gt;</span> {
+        <span class="comment">// 通知</span>
+        registration.showNotification(<span class="string">'Hello World!'</span>);
+    });
+}  
+</code></pre>
+<h3 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h3><h4 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h4><p><a href="https://lavas.baidu.com/doc" target="_blank" rel="noopener">https://lavas.baidu.com/doc</a><br><a href="https://developer.mozilla.org/zh-CN/Apps/Progressive" target="_blank" rel="noopener">https://developer.mozilla.org/zh-CN/Apps/Progressive</a><br>至此，本文介绍就结束了，更多请参考<a href="https://github.com/xiaoxiangdaiyu/PWA" target="_blank" rel="noopener">实例</a>虽然PWA目前来看，面对的限制还很多，但是也可以看出web组织在更好的提升web应用方向上做的努力。正如一直提到的那句话，未来可期。<br>目前国内百度这方面做的比较成熟，新浪微博已经有了pwa 测试版。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/05/07/performance/" rel="next" title="硬件、网络及性能">
+                <i class="fa fa-chevron-left"></i> 硬件、网络及性能
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/05/15/bfc/" rel="prev" title="由清除float原理到BFC">
+                由清除float原理到BFC <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">felix.pan</p>
+              <p class="site-description motion-element" itemprop="description">潇湘待雨个人博客</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">16</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一、传统web-应用"><span class="nav-number">1.</span> <span class="nav-text"><a href="#&#x4E00;&#x3001;&#x4F20;&#x7EDF;web-&#x5E94;&#x7528;" class="headerlink" title="&#x4E00;&#x3001;&#x4F20;&#x7EDF;web &#x5E94;&#x7528;"></a>&#x4E00;&#x3001;&#x4F20;&#x7EDF;web &#x5E94;&#x7528;</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二、PWA是什么"><span class="nav-number">2.</span> <span class="nav-text"><a href="#&#x4E8C;&#x3001;PWA&#x662F;&#x4EC0;&#x4E48;" class="headerlink" title="&#x4E8C;&#x3001;PWA&#x662F;&#x4EC0;&#x4E48;"></a>&#x4E8C;&#x3001;PWA&#x662F;&#x4EC0;&#x4E48;</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三、技术组成"><span class="nav-number">3.</span> <span class="nav-text"><a href="#&#x4E09;&#x3001;&#x6280;&#x672F;&#x7EC4;&#x6210;" class="headerlink" title="&#x4E09;&#x3001;&#x6280;&#x672F;&#x7EC4;&#x6210;"></a>&#x4E09;&#x3001;&#x6280;&#x672F;&#x7EC4;&#x6210;</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-service-worker背景"><span class="nav-number">3.1.</span> <span class="nav-text"><a href="#3-1-service-worker&#x80CC;&#x666F;" class="headerlink" title="3.1 service worker&#x80CC;&#x666F;"></a>3.1 service worker&#x80CC;&#x666F;</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#离线缓存背景"><span class="nav-number">3.1.1.</span> <span class="nav-text"><a href="#&#x79BB;&#x7EBF;&#x7F13;&#x5B58;&#x80CC;&#x666F;" class="headerlink" title="&#x79BB;&#x7EBF;&#x7F13;&#x5B58;&#x80CC;&#x666F;"></a>&#x79BB;&#x7EBF;&#x7F13;&#x5B58;&#x80CC;&#x666F;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#离线缓存的历程"><span class="nav-number">3.1.2.</span> <span class="nav-text"><a href="#&#x79BB;&#x7EBF;&#x7F13;&#x5B58;&#x7684;&#x5386;&#x7A0B;" class="headerlink" title="&#x79BB;&#x7EBF;&#x7F13;&#x5B58;&#x7684;&#x5386;&#x7A0B;"></a>&#x79BB;&#x7EBF;&#x7F13;&#x5B58;&#x7684;&#x5386;&#x7A0B;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#workers"><span class="nav-number">3.1.3.</span> <span class="nav-text"><a href="#workers" class="headerlink" title="workers"></a>workers</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#前提条件"><span class="nav-number">3.1.4.</span> <span class="nav-text"><a href="#&#x524D;&#x63D0;&#x6761;&#x4EF6;" class="headerlink" title="&#x524D;&#x63D0;&#x6761;&#x4EF6;"></a>&#x524D;&#x63D0;&#x6761;&#x4EF6;</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-Cache"><span class="nav-number">3.2.</span> <span class="nav-text"><a href="#3-2-Cache" class="headerlink" title="3.2 Cache"></a>3.2 Cache</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-注册Service-Worker"><span class="nav-number">3.3.</span> <span class="nav-text"><a href="#3-3-&#x6CE8;&#x518C;Service-Worker" class="headerlink" title="3.3 &#x6CE8;&#x518C;Service Worker"></a>3.3 &#x6CE8;&#x518C;Service Worker</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-生命周期"><span class="nav-number">3.4.</span> <span class="nav-text"><a href="#3-4-&#x751F;&#x547D;&#x5468;&#x671F;" class="headerlink" title="3.4 &#x751F;&#x547D;&#x5468;&#x671F;"></a>3.4 &#x751F;&#x547D;&#x5468;&#x671F;</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#更新service-worker"><span class="nav-number">3.4.1.</span> <span class="nav-text"><a href="#&#x66F4;&#x65B0;service-worker" class="headerlink" title="&#x66F4;&#x65B0;service worker"></a>&#x66F4;&#x65B0;service worker</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四、添加到主屏幕"><span class="nav-number">4.</span> <span class="nav-text"><a href="#&#x56DB;&#x3001;&#x6DFB;&#x52A0;&#x5230;&#x4E3B;&#x5C4F;&#x5E55;" class="headerlink" title="&#x56DB;&#x3001;&#x6DFB;&#x52A0;&#x5230;&#x4E3B;&#x5C4F;&#x5E55;"></a>&#x56DB;&#x3001;&#x6DFB;&#x52A0;&#x5230;&#x4E3B;&#x5C4F;&#x5E55;</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#manifest-json"><span class="nav-number">4.1.</span> <span class="nav-text"><a href="#manifest-json" class="headerlink" title="manifest.json"></a>manifest.json</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#五、消息通知"><span class="nav-number">4.2.</span> <span class="nav-text"><a href="#&#x4E94;&#x3001;&#x6D88;&#x606F;&#x901A;&#x77E5;" class="headerlink" title="&#x4E94;&#x3001;&#x6D88;&#x606F;&#x901A;&#x77E5;"></a>&#x4E94;&#x3001;&#x6D88;&#x606F;&#x901A;&#x77E5;</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#结束语"><span class="nav-number">4.3.</span> <span class="nav-text"><a href="#&#x7ED3;&#x675F;&#x8BED;" class="headerlink" title="&#x7ED3;&#x675F;&#x8BED;"></a>&#x7ED3;&#x675F;&#x8BED;</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#参考文档"><span class="nav-number">4.3.1.</span> <span class="nav-text"><a href="#&#x53C2;&#x8003;&#x6587;&#x6863;" class="headerlink" title="&#x53C2;&#x8003;&#x6587;&#x6863;"></a>&#x53C2;&#x8003;&#x6587;&#x6863;</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">felix.pan</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

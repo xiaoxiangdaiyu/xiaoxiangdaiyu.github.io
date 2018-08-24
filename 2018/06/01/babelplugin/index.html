@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="前言对于前端开发而言，babel肯定是再熟悉不过了，工作中肯定会用到。除了用作转换es6和jsx的工具之外，个人感觉babel基于抽象语法树的插件机制，给我们提供了更多的可能。关于babel相关概念和插件文档，网上是有很多的，讲的挺不错的。详细的解析推荐官方的babel插件手册。在开发插件之前，有些内容还是要了解一下的，已经熟悉的大佬们可以直接跳过。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="编写一个babel插件">
+<meta property="og:url" content="http://xxdy.tech/2018/06/01/babelplugin/index.html">
+<meta property="og:site_name" content="雨打梨梦三村边">
+<meta property="og:description" content="前言对于前端开发而言，babel肯定是再熟悉不过了，工作中肯定会用到。除了用作转换es6和jsx的工具之外，个人感觉babel基于抽象语法树的插件机制，给我们提供了更多的可能。关于babel相关概念和插件文档，网上是有很多的，讲的挺不错的。详细的解析推荐官方的babel插件手册。在开发插件之前，有些内容还是要了解一下的，已经熟悉的大佬们可以直接跳过。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-08-24T07:48:19.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="编写一个babel插件">
+<meta name="twitter:description" content="前言对于前端开发而言，babel肯定是再熟悉不过了，工作中肯定会用到。除了用作转换es6和jsx的工具之外，个人感觉babel基于抽象语法树的插件机制，给我们提供了更多的可能。关于babel相关概念和插件文档，网上是有很多的，讲的挺不错的。详细的解析推荐官方的babel插件手册。在开发插件之前，有些内容还是要了解一下的，已经熟悉的大佬们可以直接跳过。">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://xxdy.tech/2018/06/01/babelplugin/"/>
+
+
+
+
+
+  <title>编写一个babel插件 | 雨打梨梦三村边</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">雨打梨梦三村边</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">潇湘待雨</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://xxdy.tech/2018/06/01/babelplugin/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="felix.pan">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="雨打梨梦三村边">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">编写一个babel插件</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-06-01T08:00:29+08:00">
+                2018-06-01
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>对于前端开发而言，babel肯定是再熟悉不过了，工作中肯定会用到。除了用作转换es6和jsx的工具之外，个人感觉babel基于抽象语法树的插件机制，给我们提供了更多的可能。关于babel相关概念和插件文档，网上是有很多的，讲的挺不错的。详细的解析推荐官方的<a href="https://github.com/jamiebuilds/babel-handbook/blob/master/translations/zh-Hans/plugin-handbook.md#toc-asts" target="_blank" rel="noopener">babel插件手册</a>。在开发插件之前，有些内容还是要了解一下的，已经熟悉的大佬们可以直接跳过。<br><a id="more"></a></p>
+<h2 id="抽象语法树（AST）"><a href="#抽象语法树（AST）" class="headerlink" title="抽象语法树（AST）"></a>抽象语法树（AST）</h2><p>Babel 使用一个基于 ESTree 并修改过的 AST，它的内核说明文档可以在<a href="https://github. com/babel/babel/blob/master/doc/ast/spec. md" target="_blank" rel="noopener">这里</a>找到。<br>直接看实例应该更清晰：  </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">square</span>(<span class="params">n</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> n * n;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对应的AST对象(babel提供的对象格式)<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="comment">//代码块类别，函数声明</span></span><br><span class="line">  type: <span class="string">"FunctionDeclaration"</span>,</span><br><span class="line">  <span class="comment">//变量标识</span></span><br><span class="line">  id: &#123;</span><br><span class="line">    type: <span class="string">"Identifier"</span>,</span><br><span class="line">    <span class="comment">//变量名称</span></span><br><span class="line">    name: <span class="string">"square"</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="comment">//参数</span></span><br><span class="line">  params: [&#123;</span><br><span class="line">    type: <span class="string">"Identifier"</span>,</span><br><span class="line">    name: <span class="string">"n"</span></span><br><span class="line">  &#125;],</span><br><span class="line">  <span class="comment">//函数体</span></span><br><span class="line">  body: &#123;</span><br><span class="line">     <span class="comment">//块语句</span></span><br><span class="line">    type: <span class="string">"BlockStatement"</span>,</span><br><span class="line">    body: [&#123;</span><br><span class="line">       <span class="comment">//return 语句</span></span><br><span class="line">      type: <span class="string">"ReturnStatement"</span>,</span><br><span class="line">      argument: &#123;</span><br><span class="line">        <span class="comment">//二元表达式</span></span><br><span class="line">        type: <span class="string">"BinaryExpression"</span>,</span><br><span class="line">        <span class="comment">//操作符</span></span><br><span class="line">        operator: <span class="string">"*"</span>,</span><br><span class="line">        left: &#123;</span><br><span class="line">          type: <span class="string">"Identifier"</span>,</span><br><span class="line">          name: <span class="string">"n"</span></span><br><span class="line">        &#125;,</span><br><span class="line">        right: &#123;</span><br><span class="line">          type: <span class="string">"Identifier"</span>,</span><br><span class="line">          name: <span class="string">"n"</span></span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;]</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>大概就是上面这个层级关系，每一层都被称为节点（Node),一个完整AST对应的js对象可能会有很多节点，视具体情况而定。babel将每个节点都作为一个接口返回。其中包括的属性就如上面代码所示，例如type，start，end，loc等通用属性和具体type对应的私有属性。我们后面插件的处理也是根据不同的type来处理的。  </p>
+<p>看到这个庞大的js对象，不要感到头疼，如果说让我们每次都自己去分析AST和按照babel的定义去记住不同类型，显然不现实。这种事情应该交给电脑来执行，我们可以利用<a href="http://astexplorer.net/#/Z1exs6BWMq" target="_blank" rel="noopener">AST Explorer </a>来将目标代码转成语法树对象，结合<a href="https://github.com/babel/babylon/blob/master/ast/spec.md#variabledeclarator" target="_blank" rel="noopener"> AST node types</a>来查看具体属性。   </p>
+<h2 id="Babel-的处理步骤"><a href="#Babel-的处理步骤" class="headerlink" title="Babel 的处理步骤"></a>Babel 的处理步骤</h2><p>Babel 的三个主要处理步骤分别是： 解析（parse），转换（transform），生成（generate）,具体过程就不想详细描述了，直接看官方手册就好。<br>需要注意的是，babel插件就是在转换过程中起作用的，即将解析完成的语法树对象按照自己的目的进行处理，然后再进行代码生成步骤。所以要深入了解转换相关的内容。  </p>
+<p>代码生成步骤把最终（经过一系列转换之后）的 AST 转换成字符串形式的代码，同时还会创建源码映射（source maps），以便于调试。</p>
+<p>代码生成的原理：深度优先遍历整个 AST，然后构建可以表示转换后代码的字符串。转换的时候是是进行递归的树形遍历。</p>
+<h2 id="转换"><a href="#转换" class="headerlink" title="转换"></a>转换</h2><h3 id="Visitor"><a href="#Visitor" class="headerlink" title="Visitor"></a>Visitor</h3><p>转换的时候，是插件开始起作用的时候，但是如何进入到这个过程呢，babel给我们提供了一个Visitor的规范。我们可以通过Visitor来定义我们的访问逻辑。大概就是下面这个样子<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> MyVisitor = &#123;</span><br><span class="line">  <span class="comment">//这里对应上面node的type，所有type为Identifier的节点都会进入该方法中</span></span><br><span class="line">  Identifier() &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">"Called!"</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">//以该方法为例 </span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">square</span>(<span class="params">n</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> n * n;</span><br><span class="line">&#125; </span><br><span class="line"><span class="comment">//会调用四次，因为</span></span><br><span class="line"><span class="comment">//函数名square</span></span><br><span class="line"><span class="comment">//形参 n</span></span><br><span class="line"><span class="comment">//函数体中的两个n，都是Identifier</span></span><br><span class="line">path.traverse(MyVisitor); </span><br><span class="line"><span class="comment">//  所以输出四个</span></span><br><span class="line">Called!</span><br><span class="line">Called!</span><br><span class="line">Called!</span><br><span class="line">Called!</span><br></pre></td></tr></table></figure></p>
+<p>因为深度优先的遍历算法，到一个叶子节点之后，发现没有子孙节点，需要向上溯源才能回到上一级继续遍历下个子节点，所以每个节点都会被访问两次。<br>如果不指定的话，调用都发生在进入节点时，当然也可以在退出时调用访问者方法。<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> MyVisitor = &#123;</span><br><span class="line">  Identifier: &#123;</span><br><span class="line">    enter() &#123;</span><br><span class="line">      <span class="built_in">console</span>.log(<span class="string">"Entered!"</span>);</span><br><span class="line">    &#125;,</span><br><span class="line">    exit() &#123;</span><br><span class="line">      <span class="built_in">console</span>.log(<span class="string">"Exited!"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>此外还有一些小技巧：  </p>
+<p>可以在方法名用|来匹配多种不同的type，使用相同的处理函数。<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> MyVisitor = &#123;</span><br><span class="line">  <span class="string">"ExportNamedDeclaration|Flow"</span>(path) &#123;&#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>此外可以在访问者中使用别名(如babel-types定义)<br>例如Function是FunctionDeclaration，FunctionExpression，ArrowFunctionExpression，ObjectMethod和ObjectMethod的别名,可以用它来匹配上述所有类型的type  </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> MyVisitor = &#123;</span><br><span class="line">  <span class="built_in">Function</span>(path) &#123;&#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="Paths"><a href="#Paths" class="headerlink" title="Paths"></a>Paths</h3><p>AST 通常会有许多节点，那么节点直接如何相互关联呢？ 我们可以使用一个可操作和访问的巨大可变对象表示节点之间的关联关系，或者也可以用Paths（路径）来简化这件事情。Path 是表示两个节点之间连接的对象。直接看例子比较清晰一点。  </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">&#123;</span><br><span class="line">  type: <span class="string">"FunctionDeclaration"</span>,</span><br><span class="line">  id: &#123;</span><br><span class="line">    type: <span class="string">"Identifier"</span>,</span><br><span class="line">    name: <span class="string">"square"</span></span><br><span class="line">  &#125;,</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>将子节点 Identifier 表示为一个路径（Path）的话，看起来是这样的：  </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="string">"parent"</span>: &#123;</span><br><span class="line">    <span class="string">"type"</span>: <span class="string">"FunctionDeclaration"</span>,</span><br><span class="line">    <span class="string">"id"</span>: &#123;...&#125;,</span><br><span class="line">    ....</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="string">"node"</span>: &#123;</span><br><span class="line">    <span class="string">"type"</span>: <span class="string">"Identifier"</span>,</span><br><span class="line">    <span class="string">"name"</span>: <span class="string">"square"</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当你通过一个 Identifier() 成员方法的访问者时，你实际上是在访问路径而非节点。 通过这种方式，你操作的就是节点的响应式表示（译注：即路径）而非节点本身。  </p>
+<h2 id="编写插件"><a href="#编写插件" class="headerlink" title="编写插件"></a>编写插件</h2><p>前面都是些必备知识点，本文只是将一些相对重要一点的知识点提了一下。详细的还是要去看开发手册的。<br>个人而言开发插件的话应该有下面三个步骤：   </p>
+<ol>
+<li>分析源文件抽象语法树AST</li>
+<li>分析目标文件抽象语法树</li>
+<li>构建Visitor<br>3.1 确定访问条件<br>3.2 确定转换逻辑    </li>
+</ol>
+<p>插件主要的就是3步骤，但是前两步是十分重要的。3.1和3.2分别依赖于1和2的结果。只有清晰了解AST结构之后，才能有的放矢，事半功倍。<br>举个例子，如下代码：    </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> func = <span class="function"><span class="params">()</span>=&gt;</span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="keyword">this</span>.b)</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>目的是将箭头函数转换成普通函数声明(这里仅仅是具体这种格式的转化，其他部分就先不涉及)。如下:  </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> _this = <span class="keyword">this</span>;</span><br><span class="line"><span class="keyword">var</span> func = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(_this.b);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="源文件语法树"><a href="#源文件语法树" class="headerlink" title="源文件语法树"></a>源文件语法树</h3><p>这里分析下这个简单的函数声明，按照上面定义分析，不过这里还是推荐<a href="http://astexplorer.net/#/Z1exs6BWMq" target="_blank" rel="noopener">AST Explorer </a>可以清晰的看到我们的语法树。这里只截取有用信息：  </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">"init"</span>: &#123;</span><br><span class="line">      <span class="string">"type"</span>: <span class="string">"ArrowFunctionExpression"</span>,</span><br><span class="line">      <span class="comment">/*...其他信息....*/</span></span><br><span class="line">      <span class="string">"id"</span>: <span class="literal">null</span>,</span><br><span class="line">      <span class="comment">//形参</span></span><br><span class="line">      <span class="string">"params"</span>: [],</span><br><span class="line">      <span class="string">"body"</span>: &#123;</span><br><span class="line">        <span class="comment">//函数体,this部分</span></span><br><span class="line">        <span class="string">"arguments"</span>: [</span><br><span class="line">                &#123;</span><br><span class="line">                  <span class="string">"type"</span>: <span class="string">"MemberExpression"</span>,</span><br><span class="line">                  <span class="string">"object"</span>: &#123;</span><br><span class="line">                     <span class="comment">//this 表达式</span></span><br><span class="line">                    <span class="string">"type"</span>: <span class="string">"ThisExpression"</span>,</span><br><span class="line">                  &#125;,</span><br><span class="line">                  <span class="string">"property"</span>: &#123;</span><br><span class="line">                     <span class="comment">//b属性</span></span><br><span class="line">                    <span class="string">"type"</span>: <span class="string">"Identifier"</span>,</span><br><span class="line">                    <span class="string">"name"</span>: <span class="string">"b"</span></span><br><span class="line">                  &#125;</span><br><span class="line">                &#125;</span><br><span class="line">              ]</span><br><span class="line">     &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们要转换的只是ArrowFunctionExpression即箭头函数和this表达式ThisExpression部分，其他暂时不动。<br>那么我们的visitor里的函数名称就包括ArrowFunctionExpression和ThisExpression了。  </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//visitor里面方法的key就对应我们要处理的node  type</span></span><br><span class="line"><span class="keyword">const</span> visitor = &#123;</span><br><span class="line">    <span class="comment">//处理this表达式  </span></span><br><span class="line">    ThisExpression(path)&#123;</span><br><span class="line">        <span class="comment">//将this转换成_this的形式</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="comment">//处理箭头函数。</span></span><br><span class="line">    ArrowFunctionExpression(path)&#123;</span><br><span class="line">       <span class="comment">//转换成普通的FunctionExpression</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="目标文件语法树"><a href="#目标文件语法树" class="headerlink" title="目标文件语法树"></a>目标文件语法树</h3><p>同样的方法，语法树对象如下：<br>语法树太长，我们就看一下变化的地方好了  </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//转换之后的body由两个元素的数组，两个变量声明是统计关系</span></span><br><span class="line"><span class="string">"body"</span>: [</span><br><span class="line">  <span class="comment">//var _this = this;结构</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="string">"type"</span>: <span class="string">"VariableDeclaration"</span>,</span><br><span class="line">    <span class="string">"kind"</span>: <span class="string">"var"</span>,</span><br><span class="line">    <span class="string">"declarations"</span>: [</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="string">"type"</span>: <span class="string">"VariableDeclarator"</span>,</span><br><span class="line">        <span class="comment">//left为_this的标识</span></span><br><span class="line">        <span class="string">"id"</span>: &#123;</span><br><span class="line">          <span class="string">"type"</span>: <span class="string">"Identifier"</span>,</span><br><span class="line">          <span class="string">"name"</span>: <span class="string">"_this"</span></span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="comment">//right为this表达式</span></span><br><span class="line">        <span class="string">"init"</span>: &#123;</span><br><span class="line">          <span class="string">"type"</span>: <span class="string">"ThisExpression"</span></span><br><span class="line">          <span class="comment">/***其他**/</span></span><br><span class="line">        &#125;</span><br><span class="line">  &#125;,   </span><br><span class="line">  <span class="comment">// var func = function (b) &#123;</span></span><br><span class="line">  <span class="comment">//      console.log(_this.b);</span></span><br><span class="line">  <span class="comment">//  &#125;;结构 只看关键的</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="string">"type"</span>: <span class="string">"VariableDeclaration"</span>,</span><br><span class="line">    <span class="string">"kind"</span>: <span class="string">"var"</span>,</span><br><span class="line">    <span class="string">"declarations"</span>: [</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="comment">/*****省略*******/</span></span><br><span class="line">        <span class="string">"arguments"</span>: [</span><br><span class="line">                    &#123;</span><br><span class="line">                      <span class="string">"type"</span>: <span class="string">"MemberExpression"</span>,</span><br><span class="line">                      <span class="comment">//转换之后的_this.b</span></span><br><span class="line">                      <span class="string">"object"</span>: &#123;</span><br><span class="line">                        <span class="string">"type"</span>: <span class="string">"Identifier"</span>,</span><br><span class="line">                        <span class="string">"name"</span>: <span class="string">"_this"</span></span><br><span class="line">                      &#125;,</span><br><span class="line">                      <span class="string">"property"</span>: &#123;</span><br><span class="line">                        <span class="string">"type"</span>: <span class="string">"Identifier"</span>,</span><br><span class="line">                        <span class="string">"name"</span>: <span class="string">"b"</span></span><br><span class="line">                      &#125;</span><br><span class="line">                      ]</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+<p>经过对比，确定我们的操作应该是将ArrowFunctionExpression替换为FunctionExpression，遇到有this表达式的，绑定一下this，并将其转换。<br>进行替换增加等操作时就要用到path提供的api了：  </p>
+<ul>
+<li>replaceWith(targetObj) 替换  </li>
+<li>findParent() 查找满足条件的父节点  </li>
+<li>insertBefore 插入兄弟节点<br>更多请查询文档，这里只列出我们用到的方法。</li>
+</ul>
+<h3 id="构造节点"><a href="#构造节点" class="headerlink" title="构造节点"></a>构造节点</h3><p>这里将这个操作单独拿出来，toFunctionExpression这个api的说明我始终没找到。。。。可能是我没找对地方<a href="https://github.com/babel/babylon/blob/master/ast/spec.md#functiondeclaration" target="_blank" rel="noopener">FunctionExpression</a>，没办法我去babel源码里找了一遍：    </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//@src  /babel/packages/babel-types/src/definitions/core.js</span></span><br><span class="line">defineType(<span class="string">"FunctionExpression"</span>, &#123;</span><br><span class="line">  inherits: <span class="string">"FunctionDeclaration"</span>,</span><br><span class="line">  <span class="comment">//....</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//又找到 FunctionDeclaration</span></span><br><span class="line">defineType(<span class="string">"FunctionDeclaration"</span>, &#123;</span><br><span class="line">  <span class="comment">//这里才看到参数: id,params,body..</span></span><br><span class="line">  builder: [<span class="string">"id"</span>, <span class="string">"params"</span>, <span class="string">"body"</span>, <span class="string">"generator"</span>, <span class="string">"async"</span>],</span><br><span class="line">  visitor: [<span class="string">"id"</span>, <span class="string">"params"</span>, <span class="string">"body"</span>, <span class="string">"returnType"</span>, <span class="string">"typeParameters"</span>]</span><br><span class="line">  <span class="comment">//....  </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这样的话才知道入参，如果有清晰的文档，请大家不吝赐教。下面就简单了。</p>
+<h3 id="后来又专门找了一下，终于找到对应文档了传送门"><a href="#后来又专门找了一下，终于找到对应文档了传送门" class="headerlink" title="后来又专门找了一下，终于找到对应文档了传送门"></a>后来又专门找了一下，终于找到对应文档了<a href="https://babeljs.io/docs/core-packages/babel-types/" target="_blank" rel="noopener">传送门</a></h3><h3 id="完善Visitor"><a href="#完善Visitor" class="headerlink" title="完善Visitor"></a>完善Visitor</h3><pre><code class="js"><span class="keyword">const</span> Visitor = {
+    <span class="comment">//this表达式</span>
+    ThisExpression(path){
+        <span class="comment">//构建var _this = this</span>
+        <span class="keyword">let</span> node = t.VariableDeclaration(
+            <span class="string">'var'</span>,
+            [
+                t.VariableDeclarator(
+                    t.Identifier(<span class="string">'_this'</span>),
+                    t.Identifier(<span class="string">'this'</span>)
+                )
+            ]
+        ),
+        <span class="comment">//构建 _this标识符</span>
+        str = t.Identifier(<span class="string">'_this'</span>),
+        <span class="comment">//查找变量声明的父节点</span>
+        <span class="comment">//这里只是针对例子的，真正转换需要考虑的情况很多</span>
+        parentPath = path.findParent(<span class="function">(<span class="params">path</span>) =&gt;</span> path.isVariableDeclaration())
+        <span class="comment">//满足条件</span>
+        <span class="keyword">if</span>(parentPath){
+            <span class="comment">//插入</span>
+            parentPath.insertBefore(node)
+            path.replaceWith(
+                str
+            )
+        }<span class="keyword">else</span>{
+            <span class="keyword">return</span>
+        }
+    },
+    <span class="comment">//处理箭头函数。</span>
+    ArrowFunctionExpression(path){
+        <span class="keyword">var</span> node = path.node
+        <span class="comment">//构造一个t.FunctionExpression节点，将原有path替换掉即可</span>
+        path.replaceWith(t.FunctionExpression(
+            node.id,
+            node.params,
+            node.body
+          ))
+    }
+}     
+</code></pre>
+<p>主体visitor至此算结束了，当然如果是插件的话   </p>
+<pre><code class="js"><span class="comment">//babel调用插件时会将babel-types作为参数传入 </span>
+<span class="keyword">export</span> <span class="keyword">default</span> <span class="function"><span class="keyword">function</span>(<span class="params">{ types: t }</span>) </span>{
+  <span class="keyword">return</span> {
+    visitor:Visitor
+  }
+</code></pre>
+<p>在本地调试的话，可以分别引入babel-core和babel-types  </p>
+<pre><code class="js"><span class="keyword">var</span> babel = <span class="built_in">require</span>(<span class="string">'babel-core'</span>);
+<span class="keyword">var</span> t = <span class="built_in">require</span>(<span class="string">'babel-types'</span>);
+<span class="keyword">var</span> code = <span class="string">`var func = ()=&gt;{</span>
+<span class="string">    console.log(this.b)</span>
+<span class="string">  };`</span>
+<span class="keyword">const</span> result = babel.transform(code, {
+    plugins: [{
+      <span class="comment">//前面的Visitor</span>
+        visitor: Visitor
+    }]
+});  
+<span class="comment">//输出转换之后的code</span>
+<span class="comment">/**</span>
+<span class="comment"> * var _this = this;</span>
+<span class="comment"> * var func = function () {</span>
+<span class="comment"> * console.log(_this.b);</span>
+<span class="comment"> * }; </span>
+<span class="comment"> */</span>
+<span class="built_in">console</span>.log(result.code);  
+</code></pre>
+<h2 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h2><h3 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h3><p><a href="https://github.com/jamiebuilds/babel-handbook/blob/master/translations/zh-Hans/plugin-handbook.md#toc-replacing-a-node" target="_blank" rel="noopener">Babel 插件手册</a><br><a href="https://www.h5jun.com/post/babel-for-es6-and-beyond.html" target="_blank" rel="noopener">Babel for ES6? And Beyond!</a>   </p>
+<p>纸上得来终觉浅，原本也认为已经理解了babel的原理和插件机制，没想到连写个小demo都这么费劲。主要还是对相关api不熟悉，不知道如何去构建节点，熟练之后应该会好很多。此文是插件手册的一个简单总结，把自己实现的思路汇总了一下。抛砖引玉，共同进步，另外希望对有需要的同学略有帮助。<a href="https://github.com/xiaoxiangdaiyu/blog" target="_blank" rel="noopener">原文详见</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/05/23/jstype/" rel="next" title="深入js隐式类型转换">
+                <i class="fa fa-chevron-left"></i> 深入js隐式类型转换
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/06/13/redux/redux1/" rel="prev" title="重读redux(一)">
+                重读redux(一) <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">felix.pan</p>
+              <p class="site-description motion-element" itemprop="description">潇湘待雨个人博客</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">16</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text"><a href="#&#x524D;&#x8A00;" class="headerlink" title="&#x524D;&#x8A00;"></a>&#x524D;&#x8A00;</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#抽象语法树（AST）"><span class="nav-number">2.</span> <span class="nav-text"><a href="#&#x62BD;&#x8C61;&#x8BED;&#x6CD5;&#x6811;&#xFF08;AST&#xFF09;" class="headerlink" title="&#x62BD;&#x8C61;&#x8BED;&#x6CD5;&#x6811;&#xFF08;AST&#xFF09;"></a>&#x62BD;&#x8C61;&#x8BED;&#x6CD5;&#x6811;&#xFF08;AST&#xFF09;</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Babel-的处理步骤"><span class="nav-number">3.</span> <span class="nav-text"><a href="#Babel-&#x7684;&#x5904;&#x7406;&#x6B65;&#x9AA4;" class="headerlink" title="Babel &#x7684;&#x5904;&#x7406;&#x6B65;&#x9AA4;"></a>Babel &#x7684;&#x5904;&#x7406;&#x6B65;&#x9AA4;</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#转换"><span class="nav-number">4.</span> <span class="nav-text"><a href="#&#x8F6C;&#x6362;" class="headerlink" title="&#x8F6C;&#x6362;"></a>&#x8F6C;&#x6362;</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Visitor"><span class="nav-number">4.1.</span> <span class="nav-text"><a href="#Visitor" class="headerlink" title="Visitor"></a>Visitor</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Paths"><span class="nav-number">4.2.</span> <span class="nav-text"><a href="#Paths" class="headerlink" title="Paths"></a>Paths</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#编写插件"><span class="nav-number">5.</span> <span class="nav-text"><a href="#&#x7F16;&#x5199;&#x63D2;&#x4EF6;" class="headerlink" title="&#x7F16;&#x5199;&#x63D2;&#x4EF6;"></a>&#x7F16;&#x5199;&#x63D2;&#x4EF6;</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#源文件语法树"><span class="nav-number">5.1.</span> <span class="nav-text"><a href="#&#x6E90;&#x6587;&#x4EF6;&#x8BED;&#x6CD5;&#x6811;" class="headerlink" title="&#x6E90;&#x6587;&#x4EF6;&#x8BED;&#x6CD5;&#x6811;"></a>&#x6E90;&#x6587;&#x4EF6;&#x8BED;&#x6CD5;&#x6811;</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#目标文件语法树"><span class="nav-number">5.2.</span> <span class="nav-text"><a href="#&#x76EE;&#x6807;&#x6587;&#x4EF6;&#x8BED;&#x6CD5;&#x6811;" class="headerlink" title="&#x76EE;&#x6807;&#x6587;&#x4EF6;&#x8BED;&#x6CD5;&#x6811;"></a>&#x76EE;&#x6807;&#x6587;&#x4EF6;&#x8BED;&#x6CD5;&#x6811;</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#构造节点"><span class="nav-number">5.3.</span> <span class="nav-text"><a href="#&#x6784;&#x9020;&#x8282;&#x70B9;" class="headerlink" title="&#x6784;&#x9020;&#x8282;&#x70B9;"></a>&#x6784;&#x9020;&#x8282;&#x70B9;</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#后来又专门找了一下，终于找到对应文档了传送门"><span class="nav-number">5.4.</span> <span class="nav-text"><a href="#&#x540E;&#x6765;&#x53C8;&#x4E13;&#x95E8;&#x627E;&#x4E86;&#x4E00;&#x4E0B;&#xFF0C;&#x7EC8;&#x4E8E;&#x627E;&#x5230;&#x5BF9;&#x5E94;&#x6587;&#x6863;&#x4E86;&#x4F20;&#x9001;&#x95E8;" class="headerlink" title="&#x540E;&#x6765;&#x53C8;&#x4E13;&#x95E8;&#x627E;&#x4E86;&#x4E00;&#x4E0B;&#xFF0C;&#x7EC8;&#x4E8E;&#x627E;&#x5230;&#x5BF9;&#x5E94;&#x6587;&#x6863;&#x4E86;&#x4F20;&#x9001;&#x95E8;"></a>&#x540E;&#x6765;&#x53C8;&#x4E13;&#x95E8;&#x627E;&#x4E86;&#x4E00;&#x4E0B;&#xFF0C;&#x7EC8;&#x4E8E;&#x627E;&#x5230;&#x5BF9;&#x5E94;&#x6587;&#x6863;&#x4E86;<a href="https://babeljs.io/docs/core-packages/babel-types/" target="_blank" rel="noopener">&#x4F20;&#x9001;&#x95E8;</a></span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#完善Visitor"><span class="nav-number">5.5.</span> <span class="nav-text"><a href="#&#x5B8C;&#x5584;Visitor" class="headerlink" title="&#x5B8C;&#x5584;Visitor"></a>&#x5B8C;&#x5584;Visitor</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#结束语"><span class="nav-number">6.</span> <span class="nav-text"><a href="#&#x7ED3;&#x675F;&#x8BED;" class="headerlink" title="&#x7ED3;&#x675F;&#x8BED;"></a>&#x7ED3;&#x675F;&#x8BED;</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#参考文章"><span class="nav-number">6.1.</span> <span class="nav-text"><a href="#&#x53C2;&#x8003;&#x6587;&#x7AE0;" class="headerlink" title="&#x53C2;&#x8003;&#x6587;&#x7AE0;"></a>&#x53C2;&#x8003;&#x6587;&#x7AE0;</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">felix.pan</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

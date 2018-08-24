@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="对前端同学而言，loade,unload,DOMContentLoaded等页面加载过程中会触发的事件肯定是都接触过，不过要是具体问各个事件的区别，我就不是那么能清晰的解答上来的了。正好刚刚在无阻塞脚本那看到了DOMContentLoaded事件，就来翻翻具体文档详细看一下各个事件吧。常言道温故而知新，让我们一起回头看一下">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DOMContentLoaded、readystatechange、load、ready详谈">
+<meta property="og:url" content="http://xxdy.tech/2017/12/17/domevent/index.html">
+<meta property="og:site_name" content="雨打梨梦三村边">
+<meta property="og:description" content="对前端同学而言，loade,unload,DOMContentLoaded等页面加载过程中会触发的事件肯定是都接触过，不过要是具体问各个事件的区别，我就不是那么能清晰的解答上来的了。正好刚刚在无阻塞脚本那看到了DOMContentLoaded事件，就来翻翻具体文档详细看一下各个事件吧。常言道温故而知新，让我们一起回头看一下">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-08-24T07:48:19.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="DOMContentLoaded、readystatechange、load、ready详谈">
+<meta name="twitter:description" content="对前端同学而言，loade,unload,DOMContentLoaded等页面加载过程中会触发的事件肯定是都接触过，不过要是具体问各个事件的区别，我就不是那么能清晰的解答上来的了。正好刚刚在无阻塞脚本那看到了DOMContentLoaded事件，就来翻翻具体文档详细看一下各个事件吧。常言道温故而知新，让我们一起回头看一下">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://xxdy.tech/2017/12/17/domevent/"/>
+
+
+
+
+
+  <title>DOMContentLoaded、readystatechange、load、ready详谈 | 雨打梨梦三村边</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">雨打梨梦三村边</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">潇湘待雨</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://xxdy.tech/2017/12/17/domevent/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="felix.pan">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="雨打梨梦三村边">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">DOMContentLoaded、readystatechange、load、ready详谈</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-17T00:00:00+08:00">
+                2017-12-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>对前端同学而言，loade,unload,DOMContentLoaded等页面加载过程中会触发的事件肯定是都接触过，不过要是具体问各个事件的区别，我就不是那么能清晰的解答上来的了。正好刚刚在无阻塞脚本那看到了DOMContentLoaded事件，就来翻翻具体文档详细看一下各个事件吧。常言道温故而知新，让我们一起回头看一下<br><a id="more"></a></p>
+<h2 id="触发时机"><a href="#触发时机" class="headerlink" title="触发时机"></a>触发时机</h2><p>先看下各个事件的触发时机(参考自<a href="https://developer.mozilla.org/en-US/docs/Web/Events/DOMContentLoaded" target="_blank" rel="noopener">MDN</a>)  </p>
+<h3 id="DOMContentLoaded"><a href="#DOMContentLoaded" class="headerlink" title="DOMContentLoaded"></a>DOMContentLoaded</h3><p>当初始html文档完全加载并解析之后触发，无需等待样式、图片、子frame结束。作为明显的对比，load事件只有一个页面完全被加载时才触发。改用DOMContentLoaded的地方常常是load来代替，这是错误的。<br>tips: 有许多通用和独立的库提供跨浏览器方法来检测 DOM 是否已准备就绪即ready事件，后面我们可以看下zepto的实现</p>
+<h3 id="load"><a href="#load" class="headerlink" title="load"></a>load</h3><p>当一个资源及其依赖的资源结束加载时触发。从这里可以看到需要等待依赖资源的结束加载。</p>
+<h3 id="readystatechange"><a href="#readystatechange" class="headerlink" title="readystatechange"></a>readystatechange</h3><p>document有readyState属性来描述document的loading状态，readyState的改变会触发readystatechange事件.  </p>
+<ul>
+<li><p>loading  </p>
+<p>  文档仍然在加载  </p>
+</li>
+<li>interactive  </li>
+</ul>
+<p>  文档结束加载并且被解析，但是想图片，样式，frame之类的子资源仍在加载  </p>
+<ul>
+<li>complete    </li>
+</ul>
+<p>  文档和子资源已经结束加载，该状态表明将要触发load事件。  </p>
+<p>因此，我们同样可以使用该事件来判断dom的加载状态。<br>但并非所有对象都会经历 readyState 的这几个阶段，有时候需要</p>
+<h3 id="beforeunload"><a href="#beforeunload" class="headerlink" title="beforeunload"></a>beforeunload</h3><p>当浏览器窗口，文档或其资源将要卸载时，会触发beforeunload事件。这个文档是依然可见的，并且这个事件在这一刻是可以取消的.<br>如果处理函数为Event对象的returnValue属性赋值非空字符串，浏览器会弹出一个对话框，来询问用户是否确定要离开当前页面（如下示例）。有些浏览器会将返回的字符串展示在弹框里，但有些其他浏览器只展示它们自定义的信息。没有赋值时，该事件不做任何响应。<br>tip:2011年5月25号起，html5中指出，该事件中调用window.alert(), window.confirm(), and window.prompt()方法将会被忽略。</p>
+<h3 id="unload"><a href="#unload" class="headerlink" title="unload"></a>unload</h3><p>当文档或者一个子资源将要被卸载时，在beforeunload 、pagehide两个事件之后触发。<br>文档会处于一个特定状态。  </p>
+<ul>
+<li>所有资源仍存在 (图片, iframe 等.)</li>
+<li>对于终端用户所有资源均不可见</li>
+<li>界面交互无效 (window.open, alert, confirm 等.)</li>
+<li>错误不会停止卸载文档的过程  </li>
+</ul>
+<h2 id="页面加载中的执行顺序"><a href="#页面加载中的执行顺序" class="headerlink" title="页面加载中的执行顺序"></a>页面加载中的执行顺序</h2><p>从上面的定义，我们可以得出一个比较清晰的顺序了。  </p>
+<ol>
+<li>页面加载开始，首先肯定是先发出加载资源的请求，加载未完成之前，不触发任何事件。</li>
+<li><p>document加载结束并解析，此时css等其他资源未加载完成。</p>
+<p>此时readyState为’interactive’，表明document已经load并解析完成，触发 readystatechange，然后触发DOMContentLoaded(在大多数浏览器上的表现如此)。捎带提一句，此时，加载完成且带有defer标记的脚本，会按顺序开始执行。  </p>
+</li>
+<li><p>css、img等子资源加载完成之后  </p>
+<p>此时触发window.load事件  </p>
+</li>
+<li>点击关闭标签或者刷新时，会依次触发beforeunload、unload事件。  </li>
+</ol>
+<p>可能概念看的有点枯燥，还是看下代码比较清晰。大家可以看下，下面的代码会依次输出什么。  </p>
+<pre><code class="html"><span class="meta">&lt;!DOCTYPE html&gt;</span>
+<span class="tag">&lt;<span class="name">html</span>&gt;</span>
+
+<span class="tag">&lt;<span class="name">head</span>&gt;</span>
+    <span class="tag">&lt;<span class="name">title</span>&gt;</span>文档加载事件<span class="tag">&lt;/<span class="name">title</span>&gt;</span>
+    <span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="undefined"></span>
+<span class="javascript">            <span class="built_in">document</span>.addEventListener(<span class="string">"DOMContentLoaded"</span>, <span class="function"><span class="keyword">function</span> (<span class="params">event</span>) </span>{</span>
+<span class="javascript">                <span class="built_in">console</span>.log(<span class="string">"初始DOM 加载并解析"</span>);</span>
+<span class="undefined">            });</span>
+<span class="javascript">            <span class="built_in">window</span>.addEventListener(<span class="string">"load"</span>, <span class="function"><span class="keyword">function</span> (<span class="params">event</span>) </span>{</span>
+<span class="javascript">                <span class="built_in">console</span>.log(<span class="string">"window 所有资源加载完成"</span>);</span>
+<span class="undefined">            });</span>
+<span class="undefined"></span>
+<span class="javascript">            <span class="built_in">document</span>.onreadystatechange = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>{</span>
+<span class="javascript">                <span class="built_in">console</span>.log(<span class="built_in">document</span>.readyState)</span>
+<span class="javascript">                <span class="keyword">if</span> (<span class="built_in">document</span>.readyState === <span class="string">"complete"</span>) {</span>
+<span class="javascript">                    <span class="built_in">console</span>.log(<span class="string">'初始DOM,加载解析完成'</span>)</span>
+<span class="undefined">                }</span>
+<span class="undefined">            }</span>
+<span class="javascript">            <span class="built_in">window</span>.addEventListener(<span class="string">"beforeunload"</span>, <span class="function"><span class="keyword">function</span> (<span class="params">event</span>) </span>{</span>
+<span class="javascript">                <span class="built_in">console</span>.log(<span class="string">'即将关闭'</span>)</span>
+<span class="javascript">                event.returnValue = <span class="string">"\o/"</span>;</span>
+<span class="undefined">            });</span>
+<span class="javascript">            <span class="built_in">window</span>.addEventListener(<span class="string">'unload'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">event</span>) </span>{</span>
+<span class="javascript">                <span class="built_in">console</span>.log(<span class="string">'即将关闭1'</span>);</span>
+<span class="undefined">            });</span>
+<span class="undefined">        </span><span class="tag">&lt;/<span class="name">script</span>&gt;</span>
+    <span class="tag">&lt;<span class="name">link</span> <span class="attr">rel</span>=<span class="string">"stylesheet"</span> <span class="attr">href</span>=<span class="string">"./test.css"</span>&gt;</span>
+<span class="tag">&lt;/<span class="name">head</span>&gt;</span>
+
+<span class="tag">&lt;<span class="name">body</span>&gt;</span>
+    <span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"root"</span>&gt;</span>dom事件<span class="tag">&lt;/<span class="name">div</span>&gt;</span>
+    <span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"./index.js"</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span>
+<span class="tag">&lt;/<span class="name">body</span>&gt;</span>
+
+<span class="tag">&lt;/<span class="name">html</span>&gt;</span>
+</code></pre>
+<p>依次输出如下:  </p>
+<pre><code class="js">interactive <span class="comment">//(index):15</span>
+初始DOM 加载并解析 <span class="comment">//(index):8</span>
+complet<span class="comment">//(index):15 </span>
+初始DOM,加载解析完成<span class="comment">//(index):17 </span>
+<span class="built_in">window</span> 所有资源加载完成<span class="comment">//(index):11 </span>
+<span class="comment">//点击关闭按钮</span>
+即将关闭
+即将关闭<span class="number">2</span>  
+</code></pre>
+<h3 id="关于ready"><a href="#关于ready" class="headerlink" title="关于ready"></a>关于ready</h3><p>像jquery、zepto等类库中都有document一个ready方法，来确保我们的操作在初始dom加载之后进行，原生dom定义里是没有这个api的，是大牛们封装了一下判断的过程，提供我们以便利。<br>有了前面的例子，让我们猜一下他们是怎么实现的。  </p>
+<ol>
+<li><p>ready对应的状态是初始化dom已经加载完成，我们来看一下什么情况下对应该情况。</p>
+<p>有下面几个状态，complete、interactive 还有一个DOMContentLoaded也是初始dom加载完成，当然还有load事件，显然这里不会用到它，相对其他状态而言有点太晚了。 </p>
+</li>
+<li>确定触发条件之后，下面的实现就简单了，判断就行了。  </li>
+</ol>
+<p>以zepto为例，我们看下实现：   </p>
+<pre><code class="js"><span class="comment">//声明变量，不只使用interactive，是因为前面提到这些状态不一定全部出现</span>
+readyRE = <span class="regexp">/complete|loaded|interactive/</span>
+
+ready: <span class="function"><span class="keyword">function</span>(<span class="params">callback</span>)</span>{
+      <span class="comment">// need to check if document.body exists for IE as that browser reports</span>
+      <span class="comment">// document ready when it hasn't yet created the body element</span>
+      <span class="keyword">if</span> (readyRE.test(<span class="built_in">document</span>.readyState) &amp;&amp; <span class="built_in">document</span>.body) callback($)
+      <span class="keyword">else</span> <span class="built_in">document</span>.addEventListener(<span class="string">'DOMContentLoaded'</span>, <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>{ callback($) }, <span class="literal">false</span>)
+      <span class="keyword">return</span> <span class="keyword">this</span>
+    } 
+</code></pre>
+<p>至此，介绍就结束了。对我而言，明了原来不太清楚的概念，希望对大家也有所帮助。    </p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/11/22/websocket/node/" rel="next" title="实现一个websocket服务器-node">
+                <i class="fa fa-chevron-left"></i> 实现一个websocket服务器-node
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/12/22/css/postcss/" rel="prev" title="更便捷的css处理方式-PostCSS">
+                更便捷的css处理方式-PostCSS <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">felix.pan</p>
+              <p class="site-description motion-element" itemprop="description">潇湘待雨个人博客</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">16</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#触发时机"><span class="nav-number">1.</span> <span class="nav-text"><a href="#&#x89E6;&#x53D1;&#x65F6;&#x673A;" class="headerlink" title="&#x89E6;&#x53D1;&#x65F6;&#x673A;"></a>&#x89E6;&#x53D1;&#x65F6;&#x673A;</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#DOMContentLoaded"><span class="nav-number">1.1.</span> <span class="nav-text"><a href="#DOMContentLoaded" class="headerlink" title="DOMContentLoaded"></a>DOMContentLoaded</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#load"><span class="nav-number">1.2.</span> <span class="nav-text"><a href="#load" class="headerlink" title="load"></a>load</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#readystatechange"><span class="nav-number">1.3.</span> <span class="nav-text"><a href="#readystatechange" class="headerlink" title="readystatechange"></a>readystatechange</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#beforeunload"><span class="nav-number">1.4.</span> <span class="nav-text"><a href="#beforeunload" class="headerlink" title="beforeunload"></a>beforeunload</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#unload"><span class="nav-number">1.5.</span> <span class="nav-text"><a href="#unload" class="headerlink" title="unload"></a>unload</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#页面加载中的执行顺序"><span class="nav-number">2.</span> <span class="nav-text"><a href="#&#x9875;&#x9762;&#x52A0;&#x8F7D;&#x4E2D;&#x7684;&#x6267;&#x884C;&#x987A;&#x5E8F;" class="headerlink" title="&#x9875;&#x9762;&#x52A0;&#x8F7D;&#x4E2D;&#x7684;&#x6267;&#x884C;&#x987A;&#x5E8F;"></a>&#x9875;&#x9762;&#x52A0;&#x8F7D;&#x4E2D;&#x7684;&#x6267;&#x884C;&#x987A;&#x5E8F;</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#关于ready"><span class="nav-number">2.1.</span> <span class="nav-text"><a href="#&#x5173;&#x4E8E;ready" class="headerlink" title="&#x5173;&#x4E8E;ready"></a>&#x5173;&#x4E8E;ready</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">felix.pan</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

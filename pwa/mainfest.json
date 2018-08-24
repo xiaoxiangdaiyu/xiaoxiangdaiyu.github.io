@@ -1,0 +1,1 @@
+{"name":"PWA","short_name":"PWA","description":"测试demo","icons":[{"src":"https://h5.sinaimg.cn/upload/696/2017/08/23/weibologo.png","sizes":"606x606","type":"image/png"}],"start_url":"/pwa/demo.html","scope":"/","display":"standalone","orientation":"portrait","background_color":"#F3F3F3","theme_color":"#F3F3F3","related_applications":[],"prefer_related_applications":false}

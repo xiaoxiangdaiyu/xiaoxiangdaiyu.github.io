@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="关于webpack作为近段时间风头正盛的打包工具，webpack基本占领了前端圈。相信你都不好意思说不知道webpack。有兴趣的同学可以参考下我很早之前的webpack简介 .确实webpack万事万物皆模块的思路真是极大的方便了我们的开发，将css，图片等文件都能打包的功能离不开形形色色的loader。对于一个事情要知其然更要知其所以然，抱着这个心态我们一起来看下loader的相关知识及如何开">
+<meta property="og:type" content="article">
+<meta property="og:title" content="如何开发webpack loader">
+<meta property="og:url" content="http://xxdy.tech/2017/10/14/webpack/loader/index.html">
+<meta property="og:site_name" content="雨打梨梦三村边">
+<meta property="og:description" content="关于webpack作为近段时间风头正盛的打包工具，webpack基本占领了前端圈。相信你都不好意思说不知道webpack。有兴趣的同学可以参考下我很早之前的webpack简介 .确实webpack万事万物皆模块的思路真是极大的方便了我们的开发，将css，图片等文件都能打包的功能离不开形形色色的loader。对于一个事情要知其然更要知其所以然，抱着这个心态我们一起来看下loader的相关知识及如何开">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-08-24T07:48:19.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="如何开发webpack loader">
+<meta name="twitter:description" content="关于webpack作为近段时间风头正盛的打包工具，webpack基本占领了前端圈。相信你都不好意思说不知道webpack。有兴趣的同学可以参考下我很早之前的webpack简介 .确实webpack万事万物皆模块的思路真是极大的方便了我们的开发，将css，图片等文件都能打包的功能离不开形形色色的loader。对于一个事情要知其然更要知其所以然，抱着这个心态我们一起来看下loader的相关知识及如何开">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://xxdy.tech/2017/10/14/webpack/loader/"/>
+
+
+
+
+
+  <title>如何开发webpack loader | 雨打梨梦三村边</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">雨打梨梦三村边</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">潇湘待雨</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://xxdy.tech/2017/10/14/webpack/loader/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="felix.pan">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="雨打梨梦三村边">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">如何开发webpack loader</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-10-14T00:00:00+08:00">
+                2017-10-14
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="关于webpack"><a href="#关于webpack" class="headerlink" title="关于webpack"></a>关于webpack</h2><p>作为近段时间风头正盛的打包工具，webpack基本占领了前端圈。相信你都不好意思说不知道webpack。<br>有兴趣的同学可以参考下我很早之前的<a href="http://www.cnblogs.com/pqjwyn/p/5380689.html" target="_blank" rel="noopener">webpack简介</a> .<br>确实webpack万事万物皆模块的思路真是极大的方便了我们的开发，将css，图片等文件都能打包的功能离不开形形色色的loader。<br>对于一个事情要知其然更要知其所以然，抱着这个心态我们一起来看下loader的相关知识及如何开发。<br><a id="more"></a></p>
+<h4 id="学习方法"><a href="#学习方法" class="headerlink" title="学习方法"></a>学习方法</h4><p>对于一个新事物最好的学习方法，我认为是其官方文档。对于loader，将其官方文档看一遍，就知道如何开发最简单的loader了。<br>只是其<a href="https://webpack.js.org/contribute/writing-a-loader/" target="_blank" rel="noopener">官方文档</a>是英文的，我就顺手翻译了一下，一方面加深自己理解。另一方面为其他同学提供个参考。<br>我相信看完文档你就知道如何开发一个loader了。  </p>
+<h2 id="什么是loader"><a href="#什么是loader" class="headerlink" title="什么是loader"></a>什么是loader</h2><p>loader是一个对面暴露一个方法的node包.当遇到某些资源需要被转换时调用该方法。  </p>
+<h4 id="简单情况"><a href="#简单情况" class="headerlink" title="简单情况"></a>简单情况</h4><p>只有一个loader来处理某个文件时，该loader被调用时只有一个参数，这个参数是该文件的内容转化之后的字符串。  </p>
+<p>loader在function执行时可以通过this context来访问laoder API 以便更高效的开发。  </p>
+<p>一个仅仅需要一个值的同步loader可以简单的return 自己。其他情况下，loader可以通过this.callback(err, values…)返回一系列的值。error同样传递给this.callback或者在loader中抛出。  </p>
+<p>loader期望返回1-2个值，第一个是处理之后作为string或者buffer返回的js代码。第二个是SourceMap或者js 对象   </p>
+<h4 id="复杂情况"><a href="#复杂情况" class="headerlink" title="复杂情况:"></a>复杂情况:</h4><p>当多个loader被链式调用时，只有最后一个loader获得资源文件。<br>同时只有第一个loader被期望返回1-2个值(即上面提到的JavaScript和SourceMap)。<br>其他loader接收值由上一个loader传递。  </p>
+<p>换句话说，链式loader执行顺序从右至左或者自下而上。<br>举个栗子：下面这段代码的执行顺序就是自下而上  foo-loader==&gt;bar-loader<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">module</span>: &#123;</span><br><span class="line">  loaders: [</span><br><span class="line">    &#123;</span><br><span class="line">      test: <span class="regexp">/\.js/</span>,</span><br><span class="line">      loaders: [</span><br><span class="line">        <span class="string">'bar-loader'</span>,</span><br><span class="line">        <span class="string">'foo-loader'</span></span><br><span class="line">      ]</span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h4 id="注意：当前weboack只会在nodemodules文件夹下面搜索你指定的loader"><a href="#注意：当前weboack只会在nodemodules文件夹下面搜索你指定的loader" class="headerlink" title="注意：当前weboack只会在nodemodules文件夹下面搜索你指定的loader"></a>注意：当前weboack只会在nodemodules文件夹下面搜索你指定的loader</h4><p>如果你的文件夹不在该目录下需要在config下面增加一项配置:<br>即默认访问node_modules，你的文件夹不在的话就需要手动在配置文件里加上了。<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">resolveLoader: &#123;</span><br><span class="line">    modules: [<span class="string">'node_modules'</span>, path.resolve(__dirname, <span class="string">'loaders'</span>)]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h4 id="温馨提示"><a href="#温馨提示" class="headerlink" title="温馨提示"></a>温馨提示</h4><p>ps：经过自身实践发现这样写是错的，不需要通过path去解析，直接将文件目录写入即可。<br>一般来说loader都会发布到npm上进行管理，这种状况不用担心，但是开发阶段如果要自行测试，就面对这种情况了。<br>例如，我手写的myloader在loaders下面，例子如下。<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"> resolveLoader:&#123;</span><br><span class="line">    modules: [<span class="string">'node_modules'</span>,<span class="string">'loader'</span>]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="Examples"><a href="#Examples" class="headerlink" title="Examples"></a>Examples</h2><p>就这么简单就是个普通的loader<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">module</span>.exports = <span class="function"><span class="keyword">function</span>(<span class="params">source,map</span>)</span>&#123;</span><br><span class="line"><span class="keyword">this</span>.cacheable &amp;&amp; <span class="keyword">this</span>.cacheable()</span><br><span class="line"><span class="keyword">this</span>.value = source</span><br><span class="line"><span class="keyword">return</span> <span class="string">'/*copy@ xiaoxiangdaiyu*/'</span>+<span class="built_in">JSON</span>.stringify(source)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="开发指南"><a href="#开发指南" class="headerlink" title="开发指南"></a>开发指南</h2><p>loader需要遵循以下事项。<br>以下事项按优先级排列，第一条具有最高优先级。   </p>
+<h4 id="一、单一任务"><a href="#一、单一任务" class="headerlink" title="一、单一任务"></a>一、单一任务</h4><p>loaders可以被链式调用，为每一步创建一个loader而非一个loader做所有事情<br>也就是说，在非必要的状况下没有必要将他们转换为js。  </p>
+<p>例如：通过查询字符串将一个字符串模板转化为html。<br>如果你写了个loader做了所有事情那么你违背了loader的第一条要求。<br>你应该为每一个task创建一个loader并且通过管道来使用它们  </p>
+<ul>
+<li>jade-loader: 转换模板为一个module   </li>
+<li>apply-loader: 创建一个module并通过查询参数来返回结果  </li>
+<li>html-loade: 创建一个处理html并返回一个string的模块   </li>
+</ul>
+<h4 id="二、创建moulde话的模块，即正常的模块"><a href="#二、创建moulde话的模块，即正常的模块" class="headerlink" title="二、创建moulde话的模块，即正常的模块"></a>二、创建moulde话的模块，即正常的模块</h4><p>loader产出的module应该和遵循和普通的module一样的设计原则。<br>举个例子，下面这样设计是不好的，没有模块化，依赖全局状态<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">require</span>(<span class="string">"any-template-language-loader!./xyz.atl"</span>);</span><br><span class="line"><span class="keyword">var</span> html = anyTemplateLanguage.render(<span class="string">"xyz"</span>);</span><br></pre></td></tr></table></figure></p>
+<h4 id="三、尽量表明该loader是否可以缓存"><a href="#三、尽量表明该loader是否可以缓存" class="headerlink" title="三、尽量表明该loader是否可以缓存"></a>三、尽量表明该loader是否可以缓存</h4><p>大部分loaders是cacheable，所以应该标明是否cacheable。<br>只需要在loader里面调用即可<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">    <span class="comment">// Cacheable identity loader</span></span><br><span class="line"><span class="built_in">module</span>.exports = <span class="function"><span class="keyword">function</span>(<span class="params">source</span>) </span>&#123;</span><br><span class="line">	<span class="keyword">this</span>.cacheable();</span><br><span class="line">	<span class="keyword">return</span> source;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<h4 id="四、不要在运行和模块之间保存状态"><a href="#四、不要在运行和模块之间保存状态" class="headerlink" title="四、不要在运行和模块之间保存状态"></a>四、不要在运行和模块之间保存状态</h4><ul>
+<li>一个loader相对于其他编译后的模块应该是独立的。 除非其可以自己处理这些状态  </li>
+<li>一个loader相对于同一模块之前的编译过程应该是独立的。</li>
+</ul>
+<h4 id="五、标明依赖"><a href="#五、标明依赖" class="headerlink" title="五、标明依赖"></a>五、标明依赖</h4><p>如果该loader引用了其他资源（例如文件系统）， 必须声明它们。这些信息用来是缓存的loader失效并且重新编译它们  </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">    <span class="keyword">var</span> path = <span class="built_in">require</span>(<span class="string">"path"</span>);</span><br><span class="line">    <span class="built_in">module</span>.exports = <span class="function"><span class="keyword">function</span>(<span class="params">source</span>) </span>&#123;</span><br><span class="line">	<span class="keyword">this</span>.cacheable();</span><br><span class="line">	<span class="keyword">var</span> callback = <span class="keyword">this</span>.async();</span><br><span class="line">	<span class="keyword">var</span> headerPath = path.resolve(<span class="string">"header.js"</span>);</span><br><span class="line">	<span class="keyword">this</span>.addDependency(headerPath);</span><br><span class="line">	fs.readFile(headerPath, <span class="string">"utf-8"</span>, <span class="function"><span class="keyword">function</span>(<span class="params">err, header</span>) </span>&#123;</span><br><span class="line">		<span class="keyword">if</span>(err) <span class="keyword">return</span> callback(err);</span><br><span class="line">		callback(<span class="literal">null</span>, header + <span class="string">"\n"</span> + source);</span><br><span class="line">	&#125;);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h4 id="六、解析依赖"><a href="#六、解析依赖" class="headerlink" title="六、解析依赖"></a>六、解析依赖</h4><p>很多语言都提供了一些规范来声明依赖，例如css中的 @import 和 url(…)。这些依赖应该被模块系统所解析。  </p>
+<h5 id="下面是两种解决方式："><a href="#下面是两种解决方式：" class="headerlink" title="下面是两种解决方式："></a>下面是两种解决方式：</h5><ul>
+<li>1、将它们转化成require   </li>
+<li>2、 用this.resolve方法来解析路径  </li>
+</ul>
+<h5 id="下面是两个示例"><a href="#下面是两个示例" class="headerlink" title="下面是两个示例"></a>下面是两个示例</h5><ul>
+<li>1、css-loader: 将依赖转化成require，即用require来替换@import和 url(…)，解析对其他样式文件的依赖  </li>
+<li>2、less-loader: 不能像css-loader那样做，因为所有的less文件需要一起编译来解析变量和mixins。因此其通过一个公共的路径逻辑来扩展less编译过程。这个公共的逻辑使用this.resolve来解析带有module系统配置项的文件。例如aliasing, custom module directories等。  </li>
+</ul>
+<p>如果语言仅仅接受相对urls（如css中url(file) 总是代表./file），使用~来说明成模块依赖.<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">url(file) -&gt; <span class="built_in">require</span>(<span class="string">"./file"</span>)</span><br><span class="line">url(~<span class="built_in">module</span>) -&gt; <span class="built_in">require</span>(<span class="string">"module"</span>)</span><br></pre></td></tr></table></figure></p>
+<h4 id="七、抽离公共代码"><a href="#七、抽离公共代码" class="headerlink" title="七、抽离公共代码"></a>七、抽离公共代码</h4><p>extract common code  我感觉还是翻译成上面的标题比较好。其实所有语言都遵循该思想，即封装<br>不要写出来很多每个模块都在使用的代码，在loader中创建一个runtime文件，将公共代码放在其中</p>
+<h4 id="八、避免写入绝对路径"><a href="#八、避免写入绝对路径" class="headerlink" title="八、避免写入绝对路径"></a>八、避免写入绝对路径</h4><p>不要把绝对路径写入到模块代码中。它们将会破坏hash的过程当项目的根目录发生改变的时候。应该使用loader-utils的 stringifyRequest方法来绝对路径转化为相对路径。<br>例子：<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">  <span class="keyword">var</span> loaderUtils = <span class="built_in">require</span>(<span class="string">"loader-utils"</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="string">"var runtime = require("</span> +</span><br><span class="line">  loaderUtils.stringifyRequest(<span class="keyword">this</span>, <span class="string">"!"</span> + <span class="built_in">require</span>.resolve(<span class="string">"module/runtime"</span>)) +</span><br><span class="line"><span class="string">");"</span>;</span><br></pre></td></tr></table></figure></p>
+<h4 id="九、使用peerDependencies来指明依赖的库"><a href="#九、使用peerDependencies来指明依赖的库" class="headerlink" title="九、使用peerDependencies来指明依赖的库"></a>九、使用peerDependencies来指明依赖的库</h4><p>使用peerDependency允许应用开发者去在package.json里说明依赖的具体版本。这些依赖应该是相对开放的允许工具库升级而不需要重新发布loader版本。简而言之，对于peerDependency依赖的库应该是松耦合的，当工具库版本变化的时候不需要重新变更loader版本。  </p>
+<h4 id="十、可编程对象作为查询项"><a href="#十、可编程对象作为查询项" class="headerlink" title="十、可编程对象作为查询项"></a>十、可编程对象作为查询项</h4><p>有些情况下，loader需要某些可编程的对象但是不能作为序列化的query参数被方法解析。例如less-loader通过具体的less-plugin提供了这种可能。这种情况下，loader应该允许扩展webpack的options对象去获得具体的option。为了避免名字冲突，基于loader的命名空间来命名是很必要的。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">     <span class="comment">// webpack.config.js</span></span><br><span class="line">    <span class="built_in">module</span>.exports = &#123;</span><br><span class="line">        ...</span><br><span class="line">    lessLoader: &#123;</span><br><span class="line">        lessPlugins: [</span><br><span class="line">        <span class="keyword">new</span> LessPluginCleanCSS(&#123;<span class="attr">advanced</span>: <span class="literal">true</span>&#125;)</span><br><span class="line">        ]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h4 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h4><p>至此，如何开发一个webpack loader 我相信大家已经知道了，如果还不太清楚的话，可以移步<a href="https://github.com/xiaoxiangdaiyu/w-loader" target="_blank" rel="noopener">w-loader</a>查看。<br>另外，对于我这种英语渣渣来说，翻译起来确实难度蛮大的。此处抛砖引玉，希望大家共同探讨学习。   </p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/09/15/review/" rel="next" title="前文回顾">
+                <i class="fa fa-chevron-left"></i> 前文回顾
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/10/23/webpack/plugin/" rel="prev" title="如何开发webpack plugin">
+                如何开发webpack plugin <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">felix.pan</p>
+              <p class="site-description motion-element" itemprop="description">潇湘待雨个人博客</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">16</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#关于webpack"><span class="nav-number">1.</span> <span class="nav-text"><a href="#&#x5173;&#x4E8E;webpack" class="headerlink" title="&#x5173;&#x4E8E;webpack"></a>&#x5173;&#x4E8E;webpack</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#学习方法"><span class="nav-number">1.0.1.</span> <span class="nav-text"><a href="#&#x5B66;&#x4E60;&#x65B9;&#x6CD5;" class="headerlink" title="&#x5B66;&#x4E60;&#x65B9;&#x6CD5;"></a>&#x5B66;&#x4E60;&#x65B9;&#x6CD5;</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#什么是loader"><span class="nav-number">2.</span> <span class="nav-text"><a href="#&#x4EC0;&#x4E48;&#x662F;loader" class="headerlink" title="&#x4EC0;&#x4E48;&#x662F;loader"></a>&#x4EC0;&#x4E48;&#x662F;loader</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#简单情况"><span class="nav-number">2.0.1.</span> <span class="nav-text"><a href="#&#x7B80;&#x5355;&#x60C5;&#x51B5;" class="headerlink" title="&#x7B80;&#x5355;&#x60C5;&#x51B5;"></a>&#x7B80;&#x5355;&#x60C5;&#x51B5;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#复杂情况"><span class="nav-number">2.0.2.</span> <span class="nav-text"><a href="#&#x590D;&#x6742;&#x60C5;&#x51B5;" class="headerlink" title="&#x590D;&#x6742;&#x60C5;&#x51B5;:"></a>&#x590D;&#x6742;&#x60C5;&#x51B5;:</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#注意：当前weboack只会在nodemodules文件夹下面搜索你指定的loader"><span class="nav-number">2.0.3.</span> <span class="nav-text"><a href="#&#x6CE8;&#x610F;&#xFF1A;&#x5F53;&#x524D;weboack&#x53EA;&#x4F1A;&#x5728;nodemodules&#x6587;&#x4EF6;&#x5939;&#x4E0B;&#x9762;&#x641C;&#x7D22;&#x4F60;&#x6307;&#x5B9A;&#x7684;loader" class="headerlink" title="&#x6CE8;&#x610F;&#xFF1A;&#x5F53;&#x524D;weboack&#x53EA;&#x4F1A;&#x5728;nodemodules&#x6587;&#x4EF6;&#x5939;&#x4E0B;&#x9762;&#x641C;&#x7D22;&#x4F60;&#x6307;&#x5B9A;&#x7684;loader"></a>&#x6CE8;&#x610F;&#xFF1A;&#x5F53;&#x524D;weboack&#x53EA;&#x4F1A;&#x5728;nodemodules&#x6587;&#x4EF6;&#x5939;&#x4E0B;&#x9762;&#x641C;&#x7D22;&#x4F60;&#x6307;&#x5B9A;&#x7684;loader</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#温馨提示"><span class="nav-number">2.0.4.</span> <span class="nav-text"><a href="#&#x6E29;&#x99A8;&#x63D0;&#x793A;" class="headerlink" title="&#x6E29;&#x99A8;&#x63D0;&#x793A;"></a>&#x6E29;&#x99A8;&#x63D0;&#x793A;</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Examples"><span class="nav-number">3.</span> <span class="nav-text"><a href="#Examples" class="headerlink" title="Examples"></a>Examples</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#开发指南"><span class="nav-number">4.</span> <span class="nav-text"><a href="#&#x5F00;&#x53D1;&#x6307;&#x5357;" class="headerlink" title="&#x5F00;&#x53D1;&#x6307;&#x5357;"></a>&#x5F00;&#x53D1;&#x6307;&#x5357;</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#一、单一任务"><span class="nav-number">4.0.1.</span> <span class="nav-text"><a href="#&#x4E00;&#x3001;&#x5355;&#x4E00;&#x4EFB;&#x52A1;" class="headerlink" title="&#x4E00;&#x3001;&#x5355;&#x4E00;&#x4EFB;&#x52A1;"></a>&#x4E00;&#x3001;&#x5355;&#x4E00;&#x4EFB;&#x52A1;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#二、创建moulde话的模块，即正常的模块"><span class="nav-number">4.0.2.</span> <span class="nav-text"><a href="#&#x4E8C;&#x3001;&#x521B;&#x5EFA;moulde&#x8BDD;&#x7684;&#x6A21;&#x5757;&#xFF0C;&#x5373;&#x6B63;&#x5E38;&#x7684;&#x6A21;&#x5757;" class="headerlink" title="&#x4E8C;&#x3001;&#x521B;&#x5EFA;moulde&#x8BDD;&#x7684;&#x6A21;&#x5757;&#xFF0C;&#x5373;&#x6B63;&#x5E38;&#x7684;&#x6A21;&#x5757;"></a>&#x4E8C;&#x3001;&#x521B;&#x5EFA;moulde&#x8BDD;&#x7684;&#x6A21;&#x5757;&#xFF0C;&#x5373;&#x6B63;&#x5E38;&#x7684;&#x6A21;&#x5757;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#三、尽量表明该loader是否可以缓存"><span class="nav-number">4.0.3.</span> <span class="nav-text"><a href="#&#x4E09;&#x3001;&#x5C3D;&#x91CF;&#x8868;&#x660E;&#x8BE5;loader&#x662F;&#x5426;&#x53EF;&#x4EE5;&#x7F13;&#x5B58;" class="headerlink" title="&#x4E09;&#x3001;&#x5C3D;&#x91CF;&#x8868;&#x660E;&#x8BE5;loader&#x662F;&#x5426;&#x53EF;&#x4EE5;&#x7F13;&#x5B58;"></a>&#x4E09;&#x3001;&#x5C3D;&#x91CF;&#x8868;&#x660E;&#x8BE5;loader&#x662F;&#x5426;&#x53EF;&#x4EE5;&#x7F13;&#x5B58;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#四、不要在运行和模块之间保存状态"><span class="nav-number">4.0.4.</span> <span class="nav-text"><a href="#&#x56DB;&#x3001;&#x4E0D;&#x8981;&#x5728;&#x8FD0;&#x884C;&#x548C;&#x6A21;&#x5757;&#x4E4B;&#x95F4;&#x4FDD;&#x5B58;&#x72B6;&#x6001;" class="headerlink" title="&#x56DB;&#x3001;&#x4E0D;&#x8981;&#x5728;&#x8FD0;&#x884C;&#x548C;&#x6A21;&#x5757;&#x4E4B;&#x95F4;&#x4FDD;&#x5B58;&#x72B6;&#x6001;"></a>&#x56DB;&#x3001;&#x4E0D;&#x8981;&#x5728;&#x8FD0;&#x884C;&#x548C;&#x6A21;&#x5757;&#x4E4B;&#x95F4;&#x4FDD;&#x5B58;&#x72B6;&#x6001;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#五、标明依赖"><span class="nav-number">4.0.5.</span> <span class="nav-text"><a href="#&#x4E94;&#x3001;&#x6807;&#x660E;&#x4F9D;&#x8D56;" class="headerlink" title="&#x4E94;&#x3001;&#x6807;&#x660E;&#x4F9D;&#x8D56;"></a>&#x4E94;&#x3001;&#x6807;&#x660E;&#x4F9D;&#x8D56;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#六、解析依赖"><span class="nav-number">4.0.6.</span> <span class="nav-text"><a href="#&#x516D;&#x3001;&#x89E3;&#x6790;&#x4F9D;&#x8D56;" class="headerlink" title="&#x516D;&#x3001;&#x89E3;&#x6790;&#x4F9D;&#x8D56;"></a>&#x516D;&#x3001;&#x89E3;&#x6790;&#x4F9D;&#x8D56;</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#下面是两种解决方式："><span class="nav-number">4.0.6.1.</span> <span class="nav-text"><a href="#&#x4E0B;&#x9762;&#x662F;&#x4E24;&#x79CD;&#x89E3;&#x51B3;&#x65B9;&#x5F0F;&#xFF1A;" class="headerlink" title="&#x4E0B;&#x9762;&#x662F;&#x4E24;&#x79CD;&#x89E3;&#x51B3;&#x65B9;&#x5F0F;&#xFF1A;"></a>&#x4E0B;&#x9762;&#x662F;&#x4E24;&#x79CD;&#x89E3;&#x51B3;&#x65B9;&#x5F0F;&#xFF1A;</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#下面是两个示例"><span class="nav-number">4.0.6.2.</span> <span class="nav-text"><a href="#&#x4E0B;&#x9762;&#x662F;&#x4E24;&#x4E2A;&#x793A;&#x4F8B;" class="headerlink" title="&#x4E0B;&#x9762;&#x662F;&#x4E24;&#x4E2A;&#x793A;&#x4F8B;"></a>&#x4E0B;&#x9762;&#x662F;&#x4E24;&#x4E2A;&#x793A;&#x4F8B;</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#七、抽离公共代码"><span class="nav-number">4.0.7.</span> <span class="nav-text"><a href="#&#x4E03;&#x3001;&#x62BD;&#x79BB;&#x516C;&#x5171;&#x4EE3;&#x7801;" class="headerlink" title="&#x4E03;&#x3001;&#x62BD;&#x79BB;&#x516C;&#x5171;&#x4EE3;&#x7801;"></a>&#x4E03;&#x3001;&#x62BD;&#x79BB;&#x516C;&#x5171;&#x4EE3;&#x7801;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#八、避免写入绝对路径"><span class="nav-number">4.0.8.</span> <span class="nav-text"><a href="#&#x516B;&#x3001;&#x907F;&#x514D;&#x5199;&#x5165;&#x7EDD;&#x5BF9;&#x8DEF;&#x5F84;" class="headerlink" title="&#x516B;&#x3001;&#x907F;&#x514D;&#x5199;&#x5165;&#x7EDD;&#x5BF9;&#x8DEF;&#x5F84;"></a>&#x516B;&#x3001;&#x907F;&#x514D;&#x5199;&#x5165;&#x7EDD;&#x5BF9;&#x8DEF;&#x5F84;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#九、使用peerDependencies来指明依赖的库"><span class="nav-number">4.0.9.</span> <span class="nav-text"><a href="#&#x4E5D;&#x3001;&#x4F7F;&#x7528;peerDependencies&#x6765;&#x6307;&#x660E;&#x4F9D;&#x8D56;&#x7684;&#x5E93;" class="headerlink" title="&#x4E5D;&#x3001;&#x4F7F;&#x7528;peerDependencies&#x6765;&#x6307;&#x660E;&#x4F9D;&#x8D56;&#x7684;&#x5E93;"></a>&#x4E5D;&#x3001;&#x4F7F;&#x7528;peerDependencies&#x6765;&#x6307;&#x660E;&#x4F9D;&#x8D56;&#x7684;&#x5E93;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#十、可编程对象作为查询项"><span class="nav-number">4.0.10.</span> <span class="nav-text"><a href="#&#x5341;&#x3001;&#x53EF;&#x7F16;&#x7A0B;&#x5BF9;&#x8C61;&#x4F5C;&#x4E3A;&#x67E5;&#x8BE2;&#x9879;" class="headerlink" title="&#x5341;&#x3001;&#x53EF;&#x7F16;&#x7A0B;&#x5BF9;&#x8C61;&#x4F5C;&#x4E3A;&#x67E5;&#x8BE2;&#x9879;"></a>&#x5341;&#x3001;&#x53EF;&#x7F16;&#x7A0B;&#x5BF9;&#x8C61;&#x4F5C;&#x4E3A;&#x67E5;&#x8BE2;&#x9879;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#结束语"><span class="nav-number">4.0.11.</span> <span class="nav-text"><a href="#&#x7ED3;&#x675F;&#x8BED;" class="headerlink" title="&#x7ED3;&#x675F;&#x8BED;"></a>&#x7ED3;&#x675F;&#x8BED;</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">felix.pan</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
