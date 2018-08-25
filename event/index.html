@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="雨打梨梦三村边">
 <meta property="og:description" content="自定义事件                                 一本书的价格：     5本书的价格：50元       // 事件系统     class Event1 {         constructor() {             // 事件队列             this._events = {}         }">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-08-25T14:21:20.000Z">
+<meta property="og:updated_time" content="2018-08-25T14:22:57.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="雨打梨梦三村边">
 <meta name="twitter:description" content="自定义事件                                 一本书的价格：     5本书的价格：50元       // 事件系统     class Event1 {         constructor() {             // 事件队列             this._events = {}         }">
@@ -320,10 +320,6 @@
         event1.trigger('priceChange')
     });
     /*************自定义浏览器事件系统分割线  *************/
-    const eventAwesome = new CustomEvent('priceChange', {
-        bubbles: true,
-        detail: { getprice: () => count.value }
-    });
     // document.addEventListener('priceChange', function (e) {
     //     var price = e.detail.getprice() || 0
     //     total1.innerHTML=5 * price
