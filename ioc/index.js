@@ -1,2 +1,2 @@
-import player from './v1/player'
+const  Player = require('./v1/player');
 player.info()

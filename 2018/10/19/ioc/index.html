@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="前言随着前端承担的职责越来越重，前端应用向着复杂化、规模化的方向发展。大型项目模块化是一种趋势，不可避免模块之间要相互依赖，此外还有很多第三方包。这样的话如何去管理这些繁杂的文件，是一个不可避免的话题。此时作为一种已经被实践证明过的思想模式一直得到大家的青睐，这就是控制反转(IOC)。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="前端解读控制反转(IOC)">
+<meta property="og:url" content="http://xxdy.tech/2018/10/19/ioc/index.html">
+<meta property="og:site_name" content="雨打梨梦三村边">
+<meta property="og:description" content="前言随着前端承担的职责越来越重，前端应用向着复杂化、规模化的方向发展。大型项目模块化是一种趋势，不可避免模块之间要相互依赖，此外还有很多第三方包。这样的话如何去管理这些繁杂的文件，是一个不可避免的话题。此时作为一种已经被实践证明过的思想模式一直得到大家的青睐，这就是控制反转(IOC)。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://user-gold-cdn.xitu.io/2018/10/24/166a60f1cb4bdc20?w=808&h=580&f=png&s=32302">
+<meta property="og:image" content="https://user-gold-cdn.xitu.io/2018/10/24/166a60f1ca073f1e?w=1158&h=868&f=png&s=112204">
+<meta property="og:image" content="https://user-gold-cdn.xitu.io/2018/10/24/166a60f1c7e53fff?w=1274&h=860&f=png&s=64137">
+<meta property="og:updated_time" content="2018-10-25T08:14:31.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="前端解读控制反转(IOC)">
+<meta name="twitter:description" content="前言随着前端承担的职责越来越重，前端应用向着复杂化、规模化的方向发展。大型项目模块化是一种趋势，不可避免模块之间要相互依赖，此外还有很多第三方包。这样的话如何去管理这些繁杂的文件，是一个不可避免的话题。此时作为一种已经被实践证明过的思想模式一直得到大家的青睐，这就是控制反转(IOC)。">
+<meta name="twitter:image" content="https://user-gold-cdn.xitu.io/2018/10/24/166a60f1cb4bdc20?w=808&h=580&f=png&s=32302">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://xxdy.tech/2018/10/19/ioc/"/>
+
+
+
+
+
+  <title>前端解读控制反转(IOC) | 雨打梨梦三村边</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">雨打梨梦三村边</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">潇湘待雨</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://xxdy.tech/2018/10/19/ioc/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="felix.pan">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="雨打梨梦三村边">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">前端解读控制反转(IOC)</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-10-19T00:00:00+08:00">
+                2018-10-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>随着前端承担的职责越来越重，前端应用向着复杂化、规模化的方向发展。大型项目模块化是一种趋势，不可避免模块之间要相互依赖，此外还有很多第三方包。这样的话如何去管理这些繁杂的文件，是一个不可避免的话题。此时作为一种已经被实践证明过的思想模式一直得到大家的青睐，这就是控制反转(IOC)。<br><a id="more"></a></p>
+<h2 id="IOC定义"><a href="#IOC定义" class="headerlink" title="IOC定义"></a>IOC定义</h2><p>先看一下维基百科上的定义：<br>控制反转（Inversion of Control，缩写为IoC），是面向对象编程中的一种设计原则，可以用来减低计算机代码之间的耦合度。其中最常见的方式叫做依赖注入（Dependency Injection，简称DI），还有一种方式叫“依赖查找”（Dependency Lookup）。通过控制反转，对象在被创建的时候，由一个调控系统内所有对象的外界实体，将其所依赖的对象的引用传递给它。也可以说，依赖被注入到对象中。 </p>
+<h3 id="原则"><a href="#原则" class="headerlink" title="原则"></a>原则</h3><ol>
+<li>高层模块不应该依赖低层模块。两个都应该依赖抽象 </li>
+<li>抽象不应该依赖具体实现</li>
+<li>面向接口编程，而非面向实现编程</li>
+</ol>
+<p>针对前端来说，接口的概念不那么清晰明了，不像强类型语言。<br>概念是比较枯燥的，下面结合例子来看一下可能更好理解一点。  </p>
+<h3 id="目的"><a href="#目的" class="headerlink" title="目的"></a>目的</h3><p>根据概念可以看到最主要的目的就是降低耦合，提高扩展性。在深究之前，我们先看下代码耦合</p>
+<h4 id="代码耦合"><a href="#代码耦合" class="headerlink" title="代码耦合"></a>代码耦合</h4><p>所谓耦合，可以如下图显示：<br><img src="https://user-gold-cdn.xitu.io/2018/10/24/166a60f1cb4bdc20?w=808&h=580&f=png&s=32302"><br>比较清晰明了，代码相互之间的联系太直接：<br>假如obj2报错，那么整个系统也都报错了。<br>所以我们的目的就是降低二者之间的耦合度，<br>结合图来说比较清晰，<br>如果两者不这么直接的发生关系，那么相互影响的概率就小了那么多了。  </p>
+<p>另外，这是比较少的模块，常规项目里显然不仅仅是只有这么少，想象一下多个模块的场景：<br><img src="https://user-gold-cdn.xitu.io/2018/10/24/166a60f1ca073f1e?w=1158&h=868&f=png&s=112204"><br>这里除了耦合之外，不同齿轮之间的依赖关系也是个头疼的问题，迭代个几个版本之后发现，这是什么东西，一动就有bug。。。。</p>
+<p>所以IOC就是来解决上述问题的。<br>其常见方式是依赖注入和依赖查找。在js领域里面最出名的就是angular中大量使用了依赖注入。文字比较苍白，我们可以通过例子来看看。</p>
+<h4 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h4><p>就从nba来说，有那么一些球星，我们想知道他所属的球队，那么可能就像下面这个情况:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//球队信息</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">RTeam</span> </span>&#123;</span><br><span class="line">    <span class="keyword">constructor</span>()&#123;</span><br><span class="line">        <span class="keyword">this</span>.name = <span class="string">'火箭'</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 球员信息</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Player</span></span>&#123;</span><br><span class="line">    <span class="keyword">constructor</span>()&#123;</span><br><span class="line">        <span class="keyword">this</span>.team = <span class="keyword">new</span> Team()</span><br><span class="line">    &#125;</span><br><span class="line">    info()&#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="keyword">this</span>.team.name)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 球员ym</span></span><br><span class="line"><span class="keyword">let</span> ym = <span class="keyword">new</span> Player()</span><br><span class="line">ym.info() <span class="comment">// ‘火箭’</span></span><br></pre></td></tr></table></figure>
+<p>看起来挺好的，球员player依赖于某个球队RTeam<br>当调用的时候主动去加载球队即可。此时的控制权在player这里。</p>
+<p>假如这个时候,球员发生交易了，球队信息更换了，转换到team2了。<br>这时候我们就需要去修改player里的代码了，因为球员那里直接写死了对RTeam的依赖，这种可扩展性是很差的。<br>这不是我们所想要的，需要重新思考下依赖关系处理了。<br>球员和球队之间非得这么直接粗暴的发生联系吗，<br>一个球员对应一个球队的话，未来会发生变化的可能性太大了，毕竟不止一个球队。<br>如果两者之间不直接发生联系，中间就需要一个中间模块来负责两者关系的处理<br>球员不关注球队从哪来，只要给到我就行了。<br>这样控制权就不是直接落在player这里了，这正是IOC的设计思路。</p>
+<h3 id="依据IOC-改进"><a href="#依据IOC-改进" class="headerlink" title="依据IOC 改进"></a>依据IOC 改进</h3><p>参照IOC的几条原则，我们进行下改进。</p>
+<ol>
+<li><p>高层模块不应该依赖低层模块。两个都应该依赖抽象<br> 这里player是高层模块，直接依赖了球队这个低级模块。所以我们将两者解耦，player不再直接依赖于该team这个class  </p>
+</li>
+<li><p>抽象不应该依赖具体实现，具体实现应该依赖抽象<br> 具体到这里来看我们的player模块不应该直接依赖具体team，而是通过构造函数将抽象的teaminfo实例传递进去，这样就解耦具体实现。</p>
+</li>
+</ol>
+<p>直接看代码比较清楚：  </p>
+<pre><code class="js"><span class="comment">// 球队信息不依赖具体实现</span>
+<span class="comment">// 面向接口即面向抽象编程</span>
+<span class="class"><span class="keyword">class</span> <span class="title">TeamInfo</span> </span>{
+    <span class="keyword">constructor</span>(name) {
+        <span class="keyword">this</span>.name = name
+    }
+}
+<span class="class"><span class="keyword">class</span> <span class="title">Player</span> </span>{
+    <span class="comment">// 此处的参数，是teamInfo的一个实例，不直接依赖具体的实例</span>
+    <span class="comment">// 面向抽象</span>
+    <span class="keyword">constructor</span>(team) {
+        <span class="keyword">this</span>.team = team
+    }
+    info() {
+        <span class="built_in">console</span>.log(<span class="keyword">this</span>.team.name)
+    }
+}
+<span class="comment">// 将依赖关系放到此处来管理，控制权也放到此处</span>
+<span class="comment">// Player和TeamInfo之间不再有直接依赖</span>
+<span class="comment">// 原本直接掌握teaminfo控制权的player不再直接依赖</span>
+<span class="comment">// 将依赖控制，落在此处(第三方模块专门管理)即为控制反转</span>
+<span class="keyword">var</span> ym = <span class="keyword">new</span> Player(<span class="keyword">new</span> TeamInfo(<span class="string">'火箭'</span>))
+ym.info()
+<span class="keyword">var</span> kobe = <span class="keyword">new</span> Player(<span class="keyword">new</span> TeamInfo(<span class="string">'湖人'</span>))
+kobe.info()
+</code></pre>
+<p>这里发现，TeamInfo和Player之间已经没有直接关联了，依赖关系统一放到getTeamInfo中。<br>所谓控制反转就如何上面一样，将依赖的控制权由player转移到其他地方即我们专门的依赖管理来做了。<br>这样再增加一个team3，改动也不大，复用就行了。<br>其中之间的关系，如下面这个图：<br><img src="https://user-gold-cdn.xitu.io/2018/10/24/166a60f1c7e53fff?w=1274&h=860&f=png&s=64137"><br>彼此不直接发生联系，依赖关系统一在中间模块来管理，更加清晰。</p>
+<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><p>上面其实就是最简单的IOC实现了，基于IOC的编程思想，主要有两种实现方式：依赖注入和依赖查找。依赖查不太常用，常见的是依赖注入。    </p>
+<h4 id="依赖注入"><a href="#依赖注入" class="headerlink" title="依赖注入"></a>依赖注入</h4><p>在js中常见的就是依赖注入。从名字上理解，所谓依赖注入，即组件之间的依赖关系由容器在运行期决定，形象的来说，即由容器动态的将某种依赖关系注入到组件之中。</p>
+<p>在RequireJS/AMD的模块加载器的实现就是基于依赖注入来的，还有大名鼎鼎的angular，其实现也使用了大量的依赖注入。</p>
+<h3 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h3><p>关于控制反转，一句话总结：控制反转这里控制权从使用者本身转移到第三方容器上，而非是转移到被调用者上，这里需要明确不要疑惑。控制反转是一种思想，依赖注入是一种设计模式。<br>可能听起来比较抽象，其实我们平时开发中见到和用到的也是蛮多的，可能原来没有对应起来罢了。<br>至于依赖注入，前端领域用到的就更多了，<a href="https://juejin.im/post/5bd177806fb9a05d30179925" target="_blank" rel="noopener">下面我将结合自身实践翻译一篇个人认为很好的文章Dependency-injection-in-JavaScript</a>，来进一步深入依赖注入。<br>至此，个人见解分享完毕，抛砖引玉，希望共同学习进步。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/08/25/event/" rel="next" title="由自定义事件到vue数据响应">
+                <i class="fa fa-chevron-left"></i> 由自定义事件到vue数据响应
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/10/25/Di/" rel="prev" title="译-javascript中的依赖注入">
+                译-javascript中的依赖注入 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">felix.pan</p>
+              <p class="site-description motion-element" itemprop="description">潇湘待雨个人博客</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">19</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text"><a href="#&#x524D;&#x8A00;" class="headerlink" title="&#x524D;&#x8A00;"></a>&#x524D;&#x8A00;</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#IOC定义"><span class="nav-number">2.</span> <span class="nav-text"><a href="#IOC&#x5B9A;&#x4E49;" class="headerlink" title="IOC&#x5B9A;&#x4E49;"></a>IOC&#x5B9A;&#x4E49;</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#原则"><span class="nav-number">2.1.</span> <span class="nav-text"><a href="#&#x539F;&#x5219;" class="headerlink" title="&#x539F;&#x5219;"></a>&#x539F;&#x5219;</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#目的"><span class="nav-number">2.2.</span> <span class="nav-text"><a href="#&#x76EE;&#x7684;" class="headerlink" title="&#x76EE;&#x7684;"></a>&#x76EE;&#x7684;</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#代码耦合"><span class="nav-number">2.2.1.</span> <span class="nav-text"><a href="#&#x4EE3;&#x7801;&#x8026;&#x5408;" class="headerlink" title="&#x4EE3;&#x7801;&#x8026;&#x5408;"></a>&#x4EE3;&#x7801;&#x8026;&#x5408;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#实例"><span class="nav-number">2.2.2.</span> <span class="nav-text"><a href="#&#x5B9E;&#x4F8B;" class="headerlink" title="&#x5B9E;&#x4F8B;"></a>&#x5B9E;&#x4F8B;</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#依据IOC-改进"><span class="nav-number">2.3.</span> <span class="nav-text"><a href="#&#x4F9D;&#x636E;IOC-&#x6539;&#x8FDB;" class="headerlink" title="&#x4F9D;&#x636E;IOC &#x6539;&#x8FDB;"></a>&#x4F9D;&#x636E;IOC &#x6539;&#x8FDB;</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#实现"><span class="nav-number">2.4.</span> <span class="nav-text"><a href="#&#x5B9E;&#x73B0;" class="headerlink" title="&#x5B9E;&#x73B0;"></a>&#x5B9E;&#x73B0;</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#依赖注入"><span class="nav-number">2.4.1.</span> <span class="nav-text"><a href="#&#x4F9D;&#x8D56;&#x6CE8;&#x5165;" class="headerlink" title="&#x4F9D;&#x8D56;&#x6CE8;&#x5165;"></a>&#x4F9D;&#x8D56;&#x6CE8;&#x5165;</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#结束语"><span class="nav-number">2.5.</span> <span class="nav-text"><a href="#&#x7ED3;&#x675F;&#x8BED;" class="headerlink" title="&#x7ED3;&#x675F;&#x8BED;"></a>&#x7ED3;&#x675F;&#x8BED;</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">felix.pan</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
