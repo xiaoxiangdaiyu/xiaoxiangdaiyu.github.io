@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="前言面向对象(OOP)作为经典的设计范式，对于我们来说可谓无人不知，还记得我们入行起始时那句经典的总结吗-万事万物皆对象。是的，基于OOP思想封装、继承、多态的特点，我们会自然而然的遵循模块化、组件化的思维来设计开发应用，以到达易维护、可扩展、高复用的目的。既然OOP这么多优点，那么经常被大家提起的面向切面编程（AOP）是什么回事呢，下面我们就一起来看一下。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="前端解读面向切面编程(AOP)">
+<meta property="og:url" content="http://xxdy.tech/2018/10/26/AOP/index.html">
+<meta property="og:site_name" content="雨打梨梦三村边">
+<meta property="og:description" content="前言面向对象(OOP)作为经典的设计范式，对于我们来说可谓无人不知，还记得我们入行起始时那句经典的总结吗-万事万物皆对象。是的，基于OOP思想封装、继承、多态的特点，我们会自然而然的遵循模块化、组件化的思维来设计开发应用，以到达易维护、可扩展、高复用的目的。既然OOP这么多优点，那么经常被大家提起的面向切面编程（AOP）是什么回事呢，下面我们就一起来看一下。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-10-26T11:49:49.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="前端解读面向切面编程(AOP)">
+<meta name="twitter:description" content="前言面向对象(OOP)作为经典的设计范式，对于我们来说可谓无人不知，还记得我们入行起始时那句经典的总结吗-万事万物皆对象。是的，基于OOP思想封装、继承、多态的特点，我们会自然而然的遵循模块化、组件化的思维来设计开发应用，以到达易维护、可扩展、高复用的目的。既然OOP这么多优点，那么经常被大家提起的面向切面编程（AOP）是什么回事呢，下面我们就一起来看一下。">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://xxdy.tech/2018/10/26/AOP/"/>
+
+
+
+
+
+  <title>前端解读面向切面编程(AOP) | 雨打梨梦三村边</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">雨打梨梦三村边</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">潇湘待雨</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://xxdy.tech/2018/10/26/AOP/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="felix.pan">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="雨打梨梦三村边">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">前端解读面向切面编程(AOP)</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-10-26T00:00:00+08:00">
+                2018-10-26
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>面向对象(OOP)作为经典的设计范式，对于我们来说可谓无人不知，还记得我们入行起始时那句经典的总结吗-<strong>万事万物皆对象</strong>。<br>是的，基于OOP思想封装、继承、多态的特点，我们会自然而然的遵循模块化、组件化的思维来设计开发应用，以到达易维护、可扩展、高复用的目的。<br>既然OOP这么多优点，那么经常被大家提起的面向切面编程（AOP）是什么回事呢，下面我们就一起来看一下。<br><a id="more"></a></p>
+<h2 id="AOP定义"><a href="#AOP定义" class="headerlink" title="AOP定义"></a>AOP定义</h2><p>第一步还是要知道aop是什么，先个来自维基百科的解释：   </p>
+<p><strong>面向侧面的程序设计（aspect-oriented programming，AOP，又译作面向方面的程序设计、观点导向编程、剖面导向程序设计）是计算机科学中的一个术语，指一种程序设计范型。<br>侧面的概念源于对面向对象的程序设计的改进，但并不只限于此，它还可以用来改进传统的函数。</strong>  </p>
+<p>其从主关注点中分离出横切关注点是面向侧面的程序设计的核心概念。分离关注点使得解决特定领域问题的代码从业务逻辑中独立出来.<br>业务逻辑的代码中不再含有针对特定领域问题代码的调用，业务逻辑同特定领域问题的关系通过侧面来封装、维护.<br>这样原本分散在在整个应用程序中的变动就可以很好的管理起来。  </p>
+<h4 id="tip"><a href="#tip" class="headerlink" title="tip"></a>tip</h4><p>确实有点那么不太清晰，有点乱。不过在乱之前，我们可以选能理解的部分先看一下:  </p>
+<ul>
+<li><strong>侧面(也就是切面) 用来描述分散在对象、类或函数中的横切关注点</strong>。<br>  重点在这，分散在对象中的横切关注点，可以猜一下是什么，应该就是不同对象之间公用的部分   </li>
+<li><strong>侧面的概念源于对面向对象的程序设计的改进，它还可以用来改进传统的函数</strong>.<br>  AOP 显然不是OOP的替代品，是OOP的一种补充。   </li>
+<li><strong>从主关注点中分离出横切关注点是面向侧面的程序设计的核心概念。</strong><br>  具体到业务项目中来说，主关注点就是业务逻辑了。针对特定领域问题代码的调用，就是AOP要关注的部分   </li>
+</ul>
+<p><strong>简而言之，AOP是针对业务处理过程中的切面(即非业务逻辑部分，例如错误处理，埋点，日志等)进行提取.</strong><br>它所面对的是处理过程中的某个步骤或阶段，以获得逻辑过程中各部分之间低耦合性的隔离效果(目的是降低耦合)。<br>具体到实现来说就是通过动态的方式将非主关注点部分插入到主关注点(一般是业务逻辑中)   </p>
+<p>说了这么多，可能不太明白，还是一起看代码吧。</p>
+<h2 id="埋点场景"><a href="#埋点场景" class="headerlink" title="埋点场景"></a>埋点场景</h2><p>很普遍的这么个场景，需要点击按钮之后进行信息上报。<br>假设我们有这么个logger的工具，可以进行上报：  </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> logger = <span class="built_in">console</span>.log</span><br><span class="line"><span class="comment">//引入即可使用</span></span><br><span class="line">logger(<span class="string">'按钮被点击了'</span>)</span><br></pre></td></tr></table></figure>
+<p>那么，我们直接撸起来吧：<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> doSomething = <span class="function"><span class="params">()</span>=&gt;</span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'doSomething'</span>)</span><br><span class="line">&#125; </span><br><span class="line"><span class="keyword">let</span> clickHandler = <span class="function"><span class="params">()</span>=&gt;</span>&#123;</span><br><span class="line">   logger(<span class="string">'doSomething之前'</span>)</span><br><span class="line">   <span class="comment">// n行代码 </span></span><br><span class="line">   doSomething() </span><br><span class="line">   logger(<span class="string">'doSomething之后'</span>)</span><br><span class="line">   <span class="comment">//n 行代码</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>看起来也没什么的，简单粗暴。<br>如果有30个按钮，每个业务逻辑不同，都需要埋这个点(假设打点信息一致)。<br>我们30个函数里面，都要手动写这个方法的话，这也太坑爹了吧。<br>主要是与业务代码严重耦合，哪天不小心动了点其他内容，手抖误删了，就gg了。<br>后续维护的时候，简直噩梦。<br>仔细看一下，这不就是符合AOP的使用前提吗，那么试试AOP吧。   </p>
+<h3 id="关注点划分"><a href="#关注点划分" class="headerlink" title="关注点划分"></a>关注点划分</h3><p>根据前面提的，可以划分下关注点。  </p>
+<table>
+<thead>
+<tr>
+<th>主关注点</th>
+<th>侧关注点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>业务逻辑(doSomething)</td>
+<td>埋点信息 logger</td>
+</tr>
+</tbody>
+</table>
+<p>前面提到AOP关注的是步骤具体到例子来说其实就是插入logger的步骤。<br>插入时机无非时业务逻辑执行之前或者之后的阶段。<br>具体实现起来也不那么困难   </p>
+<h3 id="实现思路"><a href="#实现思路" class="headerlink" title="实现思路"></a>实现思路</h3><p>具体到js来说，由于语言本身的特性，天生就具有运行时动态插入逻辑的能力。<br>重点在于在原函数上增加其他功能并不改变函数本身。  </p>
+<p>毕竟函数可以接受一切形式的参数，当然函数也不例外了。<br>当传入一个函数的时候，我们要对其操作的余地就很大了，<br>保存原函数，然后利用后续参数加上call或apply，就可以达到我们的目的。<br>此外为了给函数都增加一个属性，我们在原型上操作就行了。 </p>
+<h4 id="经典before或者after的实现"><a href="#经典before或者after的实现" class="headerlink" title="经典before或者after的实现"></a>经典before或者after的实现</h4><p>网上太多类似实现了，直接看代码好了：  </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// action 即为我们的侧关注点，即logger</span></span><br><span class="line"><span class="built_in">Function</span>.prototype.after = <span class="function"><span class="keyword">function</span> (<span class="params">action</span>) </span>&#123;</span><br><span class="line">    <span class="comment">//保留当前函数，这里this指向运行函数即clickHandler</span></span><br><span class="line">    <span class="keyword">var</span> func = <span class="keyword">this</span>;</span><br><span class="line">    <span class="comment">// return 被包装过的函数，这里就可以执行其他功能了。</span></span><br><span class="line">    <span class="comment">// 并且该方法挂在Function.prototype上，</span></span><br><span class="line">    <span class="comment">// 被返回的函数依然具有after属性,可以链式调用</span></span><br><span class="line">    <span class="keyword">return</span> <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="comment">// 原函数执行，这里不考虑异步</span></span><br><span class="line">        <span class="keyword">var</span> result = func.apply(<span class="keyword">this</span>, <span class="built_in">arguments</span>);</span><br><span class="line">        <span class="comment">// 执行之后的操作</span></span><br><span class="line">        action.apply(<span class="keyword">this</span>,<span class="built_in">arguments</span>);</span><br><span class="line">        <span class="comment">// 将执行结果返回</span></span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">// before 实现类似，只不过执行顺序差别而已</span></span><br><span class="line"><span class="built_in">Function</span>.prototype.before = <span class="function"><span class="keyword">function</span> (<span class="params">action</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> func = <span class="keyword">this</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        action.apply(<span class="keyword">this</span>,<span class="built_in">arguments</span>);</span><br><span class="line">        <span class="keyword">return</span> func.apply(<span class="keyword">this</span>, <span class="built_in">arguments</span>);</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>那么我们使用AOP改造之后的代码就如下了:<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> doSomething = <span class="function"><span class="params">()</span>=&gt;</span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'doSomething'</span>)</span><br><span class="line">&#125; </span><br><span class="line"><span class="keyword">let</span> clickHandler = <span class="function"><span class="params">()</span>=&gt;</span>&#123;</span><br><span class="line">   <span class="comment">// n行代码 </span></span><br><span class="line">   doSomething() </span><br><span class="line">   <span class="comment">//n 行代码</span></span><br><span class="line">&#125;</span><br><span class="line">clickHandler = clickHandler.before(<span class="function"><span class="params">()</span>=&gt;</span>&#123;</span><br><span class="line">     logger(<span class="string">'doSomething之前'</span>)</span><br><span class="line">&#125;).after(<span class="function"><span class="params">()</span>=&gt;</span>&#123;</span><br><span class="line">     logger(<span class="string">'doSomething之后'</span>)</span><br><span class="line">&#125;)</span><br><span class="line">clickHandler() <span class="comment">// 执行结果和预期一致</span></span><br></pre></td></tr></table></figure></p>
+<p>到这里就实现了面向切面编程，我们的业务逻辑里面只管业务本身，侧关注点通过这种方式来动态引入，与主逻辑解耦，更加纯净、易于维护。</p>
+<h2 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h2><p>到这里，简单的AOP就介绍完成了。利用这种模式结合我们js本身的特性，可以尝试更多的可能。<br>例如我们react中常见的HOC、es7的装饰者模式、HOF等，很多时候不得不感叹大牛们思想的精髓，会让我们有种顿悟的感觉。本文抛砖引玉，共同学习啦，对自己是总结和提高，更希望能帮助到需要的小伙伴。<a href="https://github.com/xiaoxiangdaiyu/blog" target="_blank" rel="noopener">更多文章请移步我的博客</a></p>
+<h4 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h4><p><a href="http://www.alloyteam.com/2013/08/yong-aop-gai-shan-javascript-dai-ma/" target="_blank" rel="noopener">AllyTeam - 用AOP改善javascript代码</a><br><a href="https://juejin.im/entry/5a12443951882512a860e93c" target="_blank" rel="noopener">深入浅出 Javascript Decorators 和 AOP 编程</a> </p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/10/25/Di/" rel="next" title="译-javascript中的依赖注入">
+                <i class="fa fa-chevron-left"></i> 译-javascript中的依赖注入
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">felix.pan</p>
+              <p class="site-description motion-element" itemprop="description">潇湘待雨个人博客</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">20</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text"><a href="#&#x524D;&#x8A00;" class="headerlink" title="&#x524D;&#x8A00;"></a>&#x524D;&#x8A00;</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AOP定义"><span class="nav-number">2.</span> <span class="nav-text"><a href="#AOP&#x5B9A;&#x4E49;" class="headerlink" title="AOP&#x5B9A;&#x4E49;"></a>AOP&#x5B9A;&#x4E49;</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#tip"><span class="nav-number">2.0.1.</span> <span class="nav-text"><a href="#tip" class="headerlink" title="tip"></a>tip</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#埋点场景"><span class="nav-number">3.</span> <span class="nav-text"><a href="#&#x57CB;&#x70B9;&#x573A;&#x666F;" class="headerlink" title="&#x57CB;&#x70B9;&#x573A;&#x666F;"></a>&#x57CB;&#x70B9;&#x573A;&#x666F;</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#关注点划分"><span class="nav-number">3.1.</span> <span class="nav-text"><a href="#&#x5173;&#x6CE8;&#x70B9;&#x5212;&#x5206;" class="headerlink" title="&#x5173;&#x6CE8;&#x70B9;&#x5212;&#x5206;"></a>&#x5173;&#x6CE8;&#x70B9;&#x5212;&#x5206;</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#实现思路"><span class="nav-number">3.2.</span> <span class="nav-text"><a href="#&#x5B9E;&#x73B0;&#x601D;&#x8DEF;" class="headerlink" title="&#x5B9E;&#x73B0;&#x601D;&#x8DEF;"></a>&#x5B9E;&#x73B0;&#x601D;&#x8DEF;</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#经典before或者after的实现"><span class="nav-number">3.2.1.</span> <span class="nav-text"><a href="#&#x7ECF;&#x5178;before&#x6216;&#x8005;after&#x7684;&#x5B9E;&#x73B0;" class="headerlink" title="&#x7ECF;&#x5178;before&#x6216;&#x8005;after&#x7684;&#x5B9E;&#x73B0;"></a>&#x7ECF;&#x5178;before&#x6216;&#x8005;after&#x7684;&#x5B9E;&#x73B0;</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#结束语"><span class="nav-number">4.</span> <span class="nav-text"><a href="#&#x7ED3;&#x675F;&#x8BED;" class="headerlink" title="&#x7ED3;&#x675F;&#x8BED;"></a>&#x7ED3;&#x675F;&#x8BED;</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#参考文章"><span class="nav-number">4.0.1.</span> <span class="nav-text"><a href="#&#x53C2;&#x8003;&#x6587;&#x7AE0;" class="headerlink" title="&#x53C2;&#x8003;&#x6587;&#x7AE0;"></a>&#x53C2;&#x8003;&#x6587;&#x7AE0;</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">felix.pan</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
