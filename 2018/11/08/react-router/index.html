@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="前言react-router升级到4之后，跟前面版本比有了很大的差别。例如包的拆分，动态路由等详细的差别就不说了，各位大神的总结也很到位，详细可以点击看看，All About React Router 4这篇文章。此外还有个差别是路由规则的变化。  一直有着上个版本的习惯，所以稍微复杂的路由，配起来的时候简直痛不欲生。痛定思痛，要好好了解下其依赖的匹配规则，即path-to-regexp。 本文期">
+<meta property="og:type" content="article">
+<meta property="og:title" content="react-router v4 路由规则解析">
+<meta property="og:url" content="http://xxdy.tech/2018/11/08/react-router/index.html">
+<meta property="og:site_name" content="雨打梨梦三村边">
+<meta property="og:description" content="前言react-router升级到4之后，跟前面版本比有了很大的差别。例如包的拆分，动态路由等详细的差别就不说了，各位大神的总结也很到位，详细可以点击看看，All About React Router 4这篇文章。此外还有个差别是路由规则的变化。  一直有着上个版本的习惯，所以稍微复杂的路由，配起来的时候简直痛不欲生。痛定思痛，要好好了解下其依赖的匹配规则，即path-to-regexp。 本文期">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-11-09T12:56:43.848Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="react-router v4 路由规则解析">
+<meta name="twitter:description" content="前言react-router升级到4之后，跟前面版本比有了很大的差别。例如包的拆分，动态路由等详细的差别就不说了，各位大神的总结也很到位，详细可以点击看看，All About React Router 4这篇文章。此外还有个差别是路由规则的变化。  一直有着上个版本的习惯，所以稍微复杂的路由，配起来的时候简直痛不欲生。痛定思痛，要好好了解下其依赖的匹配规则，即path-to-regexp。 本文期">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://xxdy.tech/2018/11/08/react-router/"/>
+
+
+
+
+
+  <title>react-router v4 路由规则解析 | 雨打梨梦三村边</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">雨打梨梦三村边</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">潇湘待雨</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://xxdy.tech/2018/11/08/react-router/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="felix.pan">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="雨打梨梦三村边">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">react-router v4 路由规则解析</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-11-08T00:00:00+08:00">
+                2018-11-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>react-router升级到4之后，跟前面版本比有了很大的差别。<br>例如包的拆分，动态路由等<a href="https://css-tricks.com/react-router-4/" target="_blank" rel="noopener">详细的差别就不说了，各位大神的总结也很到位，详细可以点击看看，All About React Router 4这篇文章</a>。<br>此外还有个差别是路由规则的变化。  一直有着上个版本的习惯，所以稍微复杂的路由，配起来的时候简直痛不欲生。<br>痛定思痛，要好好了解下其依赖的匹配规则，即<a href="path-to-regexp">path-to-regexp</a>。</p>
+<p>本文期望读者是对react-router有过使用的同学，不然本文省略了太多东西，可能看起来可能有点太乱。<br><a id="more"></a></p>
+<h2 id="path-to-regexp-是什么"><a href="#path-to-regexp-是什么" class="headerlink" title="path-to-regexp 是什么"></a>path-to-regexp 是什么</h2><p>其文档一句话介绍很简洁明了:  将路径字符串（如/user/：name）转换为正则表达式。react-router matchPath就是基于其来匹配了。   </p>
+<h3 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> pathToRegexp = <span class="built_in">require</span>(<span class="string">'path-to-regexp'</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// pathToRegexp(path, keys?, options?)</span></span><br><span class="line"><span class="comment">// pathToRegexp.parse(path)</span></span><br><span class="line"><span class="comment">// pathToRegexp.compile(path)</span></span><br></pre></td></tr></table></figure>
+<p>参数：  </p>
+<ul>
+<li><strong>path</strong>: 字符串、字符串数组、正则表达式  </li>
+<li><strong>keys</strong>  可选  由在path里找到的key组成的数组</li>
+<li><strong>options</strong> 可选 由下面几部分组成：  <ol>
+<li>敏感匹配 默认false，当为true时，正则将区分大小写</li>
+<li>严格模式 默认false 为true，将会匹配可选的紧跟的分隔符</li>
+<li>end 默认true 正则是否匹配至字符串结尾</li>
+<li>start 默认true 是否从字符串开始进行匹配</li>
+<li>高阶选项（用于非路径名称字符串，例如主机名称hostname）  <ol>
+<li>分隔符 默认每段的分隔符是’/‘</li>
+<li>结尾字符 可选字段或字段列表、用于作为结束字符</li>
+<li>分隔符列表 解析时要当做分隔符考虑的字段列表 默认‘./’ </li>
+</ol>
+</li>
+</ol>
+</li>
+</ul>
+<p>还是直接看官方例子吧</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 匹配的path中关键字，得到由其组成的数组</span></span><br><span class="line"><span class="comment">// 简而言之，就是匹配的结果，增加该参数，可以更方便的使用和分析</span></span><br><span class="line"><span class="keyword">var</span> keys = []</span><br><span class="line"><span class="keyword">var</span> re = pathToRegexp(<span class="string">'/foo/:bar'</span>, keys)</span><br><span class="line"><span class="comment">// 执行结果，转换之后的正则就如下</span></span><br><span class="line"><span class="comment">// re = /^\/foo\/([^\/]+?)\/?$/i</span></span><br><span class="line"><span class="comment">// 得到的路由相关信息</span></span><br><span class="line">keys = [</span><br><span class="line">    &#123; </span><br><span class="line">        <span class="comment">// 路由path中的参数名称</span></span><br><span class="line">        name: <span class="string">'bar'</span>, </span><br><span class="line">        <span class="comment">// 前缀，分隔符等    </span></span><br><span class="line">        prefix: <span class="string">'/'</span>, </span><br><span class="line">        delimiter: <span class="string">'/'</span>, </span><br><span class="line">        optional: <span class="literal">false</span>, </span><br><span class="line">        repeat: <span class="literal">false</span>, </span><br><span class="line">        pattern: <span class="string">'[^\\/]+?'</span> </span><br><span class="line">    &#125;</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+<p>这样看起来应该清楚一下，下面继续看使用规则  </p>
+<h3 id="规则"><a href="#规则" class="headerlink" title="规则"></a>规则</h3><p>最简单的例子（结合react-router-config 路由最简单的路由可以如下， 各字段含义就不提了，本文只关注匹配规则）:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> routes = [</span><br><span class="line">  &#123; <span class="attr">component</span>: Root,  </span><br><span class="line">    routes: [</span><br><span class="line">      &#123; </span><br><span class="line">        <span class="comment">//只匹配/  </span></span><br><span class="line">        path: <span class="string">'/'</span>,</span><br><span class="line">        exact: <span class="literal">true</span>,</span><br><span class="line">        component: Home</span><br><span class="line">      &#125;</span><br><span class="line">    ]</span><br><span class="line">  &#125;</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+<p>看起来也不过尔尔，简单匹配就完了，但是如果要是有比较复杂的路径的话，例如有这么一个路径:’/a/1/3.html’ 其实/1/3都是可以省略的也是可选的，也就是说如下面这样：  </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">'/a/1/3.html'</span></span><br><span class="line"><span class="string">'/a.html'</span></span><br><span class="line"><span class="string">'/a/2.html'</span></span><br></pre></td></tr></table></figure>
+<p>先不要急着写，这种当然是要有按照相应规则来匹配了，先看下对应规则：</p>
+<h3 id="参数"><a href="#参数" class="headerlink" title="参数"></a>参数</h3><p>路径参数将会被用来定义参数和匹配关键字列表(即我们的keys)  </p>
+<h4 id="命名参数"><a href="#命名参数" class="headerlink" title="命名参数"></a>命名参数</h4><p>命名参数通过如下形式定义： 在参数前面加上引号，例如：‘：foo’。默认情况下，在path的该区域结束之前的部分都会被匹配到(默认的话也就是两个//之间为一个区域，例如/:foo/，那么:foo 部分就是一个区域(segment))。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> re = pathToRegexp(<span class="string">'/:foo/:bar'</span>)</span><br><span class="line"><span class="comment">// 对应的匹配key数组如下</span></span><br><span class="line">keys = [</span><br><span class="line">    &#123; <span class="attr">name</span>: <span class="string">'foo'</span>, <span class="attr">prefix</span>: <span class="string">'/'</span>, ... &#125;,</span><br><span class="line">    &#123; <span class="attr">name</span>: <span class="string">'bar'</span>, <span class="attr">prefix</span>: <span class="string">'/'</span>, ... &#125;</span><br><span class="line">]</span><br><span class="line"><span class="comment">// 对于下面的path，执行结果</span></span><br><span class="line">re.exec(<span class="string">'/test/route'</span>)</span><br><span class="line"><span class="comment">//=&gt; ['/test/route', 'test', 'route']</span></span><br></pre></td></tr></table></figure>
+<h4 id="参数修饰符"><a href="#参数修饰符" class="headerlink" title="参数修饰符"></a>参数修饰符</h4><h5 id="可选"><a href="#可选" class="headerlink" title="可选"></a>可选</h5><p>参数后缀可以加上一个可选标识即’?’,表明该参数可选,这样情况下该部分参数如果没有也不正确匹配，只不过在匹配结果里值为undefined  </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> re = pathToRegexp(<span class="string">'/:foo/:bar?'</span>)</span><br><span class="line">keys = [</span><br><span class="line">    &#123; <span class="attr">name</span>: <span class="string">'foo'</span>, ... &#125;, </span><br><span class="line">    &#123; </span><br><span class="line">    name: <span class="string">'bar'</span>, </span><br><span class="line">    delimiter: <span class="string">'/'</span>, </span><br><span class="line">    <span class="comment">// 匹配key数组第二部分就为true，表明该参数可选</span></span><br><span class="line">    optional: <span class="literal">true</span>, </span><br><span class="line">    repeat: <span class="literal">false</span> &#125;</span><br><span class="line">]</span><br><span class="line"><span class="comment">// 可省略候选bar对应的部分</span></span><br><span class="line">re.exec(<span class="string">'/test'</span>)</span><br><span class="line"><span class="comment">//=&gt; ['/test', 'test', undefined]</span></span><br><span class="line"></span><br><span class="line">re.exec(<span class="string">'/test/route'</span>)</span><br><span class="line"><span class="comment">//=&gt; ['/test', 'test', 'route']</span></span><br></pre></td></tr></table></figure>
+<h5 id="0-n"><a href="#0-n" class="headerlink" title="0-n"></a>0-n</h5><p>当然参数可以以*结尾，标识该部分参数0-n(可以类比正则)。每个匹配都会将前缀(/)考虑进去，即/已经不是默认的区块分割了，这也是跟？的区别。看例子比较清晰  </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> re = pathToRegexp(<span class="string">'/:foo*'</span>)</span><br><span class="line"><span class="comment">// keys = [&#123; name: 'foo', delimiter: '/', optional: true, repeat: true &#125;]</span></span><br><span class="line"></span><br><span class="line">re.exec(<span class="string">'/'</span>)</span><br><span class="line"><span class="comment">//=&gt; ['/', undefined]</span></span><br><span class="line"><span class="comment">// 主要看这里，这时候/baz的内容同样被当成 foo的value组成部分了，直接和前面的一起输出</span></span><br><span class="line">re.exec(<span class="string">'/bar/baz'</span>)</span><br><span class="line"><span class="comment">//=&gt; ['/bar/baz', 'bar/baz']</span></span><br></pre></td></tr></table></figure>
+<p>对比下？修饰符，应该比较清楚了。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> re = pathToRegexp(<span class="string">'/:foo?'</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 直接认为是不匹配的，输出为null</span></span><br><span class="line">re.exec(<span class="string">'/bar/baz'</span>)</span><br><span class="line"><span class="comment">//=&gt; null</span></span><br></pre></td></tr></table></figure>
+<h5 id="1-n"><a href="#1-n" class="headerlink" title="1-n"></a>1-n</h5><p>参数以+结尾时，表明该部分参数至少为1，同样会将分隔符计算进来。可以对比下上面与*的区别</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> re = pathToRegexp(<span class="string">'/:foo+'</span>)</span><br><span class="line"><span class="comment">// keys = [&#123; name: 'foo', delimiter: '/', optional: false, repeat: true &#125;]</span></span><br><span class="line"><span class="comment">// 此时/ 的路由已经不能匹配了，至少有一个参数</span></span><br><span class="line">re.exec(<span class="string">'/'</span>)</span><br><span class="line"><span class="comment">//=&gt; null</span></span><br><span class="line"><span class="comment">// 这里倒是跟*一样</span></span><br><span class="line">re.exec(<span class="string">'/bar/baz'</span>)</span><br><span class="line"><span class="comment">//=&gt; ['/bar/baz', 'bar/baz']</span></span><br></pre></td></tr></table></figure>
+<h5 id="自定义匹配参数"><a href="#自定义匹配参数" class="headerlink" title="自定义匹配参数"></a>自定义匹配参数</h5><p>所有的参数都可以提供自定义的匹配规则，来覆盖默认规则([^\/]+)，如下匹配数字的例子：  </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 这里自定的规则就是我们的数字匹配了(\d+) </span></span><br><span class="line"><span class="keyword">var</span> re = pathToRegexp(<span class="string">'/icon-:foo(\\d+).png'</span>)</span><br><span class="line"><span class="comment">// keys = [&#123; name: 'foo', ... &#125;]</span></span><br><span class="line"></span><br><span class="line">re.exec(<span class="string">'/icon-123.png'</span>)</span><br><span class="line"><span class="comment">//=&gt; ['/icon-123.png', '123']</span></span><br><span class="line"></span><br><span class="line">re.exec(<span class="string">'/icon-abc.png'</span>)</span><br><span class="line"><span class="comment">//=&gt; null</span></span><br></pre></td></tr></table></figure>
+<p>注意：自定义规则中反斜杠()前面需要再加一个反斜杠，例如上线的例子(\d+)(这里跟正则不太一致，记得别混淆)  </p>
+<h4 id="未命名参数"><a href="#未命名参数" class="headerlink" title="未命名参数"></a>未命名参数</h4><p>未命名的参数当然也是可行的，即只包含修饰符的群组。和命名参数的功能一样，只不过其name不是对应的key而是数字下标  </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 第二个区块，匹配的是所有字符.*，显然是未命名的</span></span><br><span class="line"><span class="keyword">var</span> re = pathToRegexp(<span class="string">'/:foo/(.*)'</span>)</span><br><span class="line">keys = [</span><br><span class="line">&#123; <span class="attr">name</span>: <span class="string">'foo'</span>, ... &#125;, </span><br><span class="line"><span class="comment">// name就是0了，再有一个则按顺序排列    </span></span><br><span class="line">&#123; <span class="attr">name</span>: <span class="number">0</span>, ... &#125;]</span><br><span class="line"><span class="comment">// 结果没什么差别。</span></span><br><span class="line">re.exec(<span class="string">'/test/route'</span>)</span><br><span class="line"><span class="comment">//=&gt; ['/test/route', 'test', 'route']  </span></span><br><span class="line"><span class="string">``</span><span class="string">`  </span></span><br><span class="line"><span class="string">注意： react-router v4 不再处理querystring了，大家可以使用各种工具来处理，自己撸个工具也行。  </span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">到这里参数部分已经结束了，回到上面的部分，/a/1/3.html。后面两个参数可选。</span></span><br><span class="line"><span class="string">具体规则可以如下配置。  </span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">`</span><span class="string">``</span>js</span><br><span class="line"><span class="keyword">const</span> routes = [</span><br><span class="line">  &#123; <span class="attr">component</span>: Root,  </span><br><span class="line">    routes: [</span><br><span class="line">      &#123;  </span><br><span class="line">        path: <span class="string">'/a(/)?:num1?(/)?:num2?(/)?'</span>,</span><br><span class="line">        exact: <span class="literal">true</span>,</span><br><span class="line">        component: Home</span><br><span class="line">      &#125;</span><br><span class="line">    ]</span><br><span class="line">  &#125;</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+<p>是不是感觉日了那什么，有这么复杂吗，来我们仔细看看有没有这么复杂。</p>
+<ol>
+<li>/a是固定的，可以不变，第一部分确定。  </li>
+<li>后面这个1对应num1，且可选  /a/:num1?</li>
+<li>3对应num2,同样可选 /a/:num1?/:num2?.html</li>
+</ol>
+<p>看起来应该是这样。那么来试一试吧。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> re = pathToRegexp(<span class="string">'/a/:num1?/:num2?.html'</span>)</span><br><span class="line"><span class="comment">// 第一种情况是满足的，并且正确的得到value了。 3，4</span></span><br><span class="line"><span class="built_in">console</span>.log(re.exec(<span class="string">'/a/3/4.html'</span>)) </span><br><span class="line"><span class="comment">// [ '/a/3/4.html', '3', '4', index: 0, input: '/a/3/4.html' ]</span></span><br><span class="line"><span class="comment">// 这里看起来没问题，但是我们第一个匹配num1 是 undefined</span></span><br><span class="line"><span class="comment">// 这样顺序就乱了，这里应该是num1而非num2</span></span><br><span class="line"><span class="built_in">console</span>.log(re.exec(<span class="string">'/a/4.html'</span>))</span><br><span class="line"><span class="comment">// [ '/a/4.html', undefined, '4', index: 0, input: '/a/4.html' ]</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 直接不能匹配了</span></span><br><span class="line"><span class="built_in">console</span>.log(re.exec(<span class="string">'/a.html'</span>))</span><br><span class="line"><span class="comment">// null</span></span><br></pre></td></tr></table></figure>
+<p>这里的问题就在于连续两个可选参数的情况下，单纯的使用？就不满足了。  </p>
+<p>按照上面的表达式，匹配的应该是第一个参数可选，但只有一个参数时，4.html连着一起，认为是num2的value了。<br>上面的表达式转换为正则之后如下，有兴趣可以研究下：<br>这里的4.html命中的是后面的([^\/]+?)?.html(?:\/)?$</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">/^\/a(?:\/([^\/]+?))?\/([^\/]+?)?\.html(?:\/)?$/i</span><br><span class="line"><span class="string">``</span><span class="string">`  </span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">对着上面的文档思考下，可以自定义可选参数，那么我们可不可以这样来试试(讲真的，开始真是试的)：    </span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">指明前缀也是可选，表明.html不是跟最后一个区块紧密相连，这样应该可以满足要求  </span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">`</span><span class="string">``</span>js</span><br><span class="line"><span class="keyword">var</span> re = pathToRegexp(<span class="string">'/a(/)?:num1?(/)?:num2?.html'</span>)</span><br><span class="line"><span class="built_in">console</span>.log(re.exec(<span class="string">'/a/0/4.html'</span>))</span><br><span class="line"><span class="comment">//[ '/a/0/4.html', '/', '0', '/', '4', index: 0, input: '/a/0/4.html' ]</span></span><br><span class="line"><span class="comment">// 满足需求，这样4其实为num2的value </span></span><br><span class="line"><span class="built_in">console</span>.log(re.exec(<span class="string">'/a/4.html'</span>))</span><br><span class="line"><span class="comment">//[ '/a/4.html','/','4',undefined,undefined,index: 0,input: '/a/4.html' ]</span></span><br><span class="line"><span class="comment">// 第三种满足情况</span></span><br><span class="line"><span class="built_in">console</span>.log(re.exec(<span class="string">'/a.html'</span>))</span><br><span class="line"><span class="comment">// [ '/a.html',undefined,undefined,undefined,undefined,index: 0,input: '/a.html' ]</span></span><br></pre></td></tr></table></figure>
+<p>这样总算满足需求了。  </p>
+<h4 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h4><p>有以下这么几个，这里就不详细介绍了。  </p>
+<ul>
+<li>Parse 返回一个字符串和keys的数组。</li>
+<li>Compile (“Reverse” Path-To-RegExp)  将字符串转换为有效路径。 </li>
+<li><a href="https://github.com/pillarjs/path-to-regexp" target="_blank" rel="noopener">其他的参考官网</a></li>
+</ul>
+<h2 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h2><p>到这里关于react-router V4 路由规则部分的解析就结束了。起因也是自己在配置路由时有点懵，不想就那样跟着别人的路由配完就完了。知其然也要知其所以然，应该是我们技术人员一直秉承的一个态度，所以自己总结了一下，抛砖引玉，以供自己记忆和有需要的同学参考。<br><a href="https://github.com/xiaoxiangdaiyu/blog" target="_blank" rel="noopener">更多我的博客请移步</a></p>
+<h3 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h3><ul>
+<li><a href="https://github.com/pillarjs/path-to-regexp" target="_blank" rel="noopener">path-to-regexp文档</a>  </li>
+<li><a href="https://css-tricks.com/react-router-4/" target="_blank" rel="noopener">https://css-tricks.com/react-router-4/</a></li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/10/26/AOP/" rel="next" title="前端解读面向切面编程(AOP)">
+                <i class="fa fa-chevron-left"></i> 前端解读面向切面编程(AOP)
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">felix.pan</p>
+              <p class="site-description motion-element" itemprop="description">潇湘待雨个人博客</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">21</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text"><a href="#&#x524D;&#x8A00;" class="headerlink" title="&#x524D;&#x8A00;"></a>&#x524D;&#x8A00;</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#path-to-regexp-是什么"><span class="nav-number">2.</span> <span class="nav-text"><a href="#path-to-regexp-&#x662F;&#x4EC0;&#x4E48;" class="headerlink" title="path-to-regexp &#x662F;&#x4EC0;&#x4E48;"></a>path-to-regexp &#x662F;&#x4EC0;&#x4E48;</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#使用"><span class="nav-number">2.1.</span> <span class="nav-text"><a href="#&#x4F7F;&#x7528;" class="headerlink" title="&#x4F7F;&#x7528;"></a>&#x4F7F;&#x7528;</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#规则"><span class="nav-number">2.2.</span> <span class="nav-text"><a href="#&#x89C4;&#x5219;" class="headerlink" title="&#x89C4;&#x5219;"></a>&#x89C4;&#x5219;</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参数"><span class="nav-number">2.3.</span> <span class="nav-text"><a href="#&#x53C2;&#x6570;" class="headerlink" title="&#x53C2;&#x6570;"></a>&#x53C2;&#x6570;</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#命名参数"><span class="nav-number">2.3.1.</span> <span class="nav-text"><a href="#&#x547D;&#x540D;&#x53C2;&#x6570;" class="headerlink" title="&#x547D;&#x540D;&#x53C2;&#x6570;"></a>&#x547D;&#x540D;&#x53C2;&#x6570;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参数修饰符"><span class="nav-number">2.3.2.</span> <span class="nav-text"><a href="#&#x53C2;&#x6570;&#x4FEE;&#x9970;&#x7B26;" class="headerlink" title="&#x53C2;&#x6570;&#x4FEE;&#x9970;&#x7B26;"></a>&#x53C2;&#x6570;&#x4FEE;&#x9970;&#x7B26;</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#可选"><span class="nav-number">2.3.2.1.</span> <span class="nav-text"><a href="#&#x53EF;&#x9009;" class="headerlink" title="&#x53EF;&#x9009;"></a>&#x53EF;&#x9009;</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#0-n"><span class="nav-number">2.3.2.2.</span> <span class="nav-text"><a href="#0-n" class="headerlink" title="0-n"></a>0-n</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#1-n"><span class="nav-number">2.3.2.3.</span> <span class="nav-text"><a href="#1-n" class="headerlink" title="1-n"></a>1-n</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#自定义匹配参数"><span class="nav-number">2.3.2.4.</span> <span class="nav-text"><a href="#&#x81EA;&#x5B9A;&#x4E49;&#x5339;&#x914D;&#x53C2;&#x6570;" class="headerlink" title="&#x81EA;&#x5B9A;&#x4E49;&#x5339;&#x914D;&#x53C2;&#x6570;"></a>&#x81EA;&#x5B9A;&#x4E49;&#x5339;&#x914D;&#x53C2;&#x6570;</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#未命名参数"><span class="nav-number">2.3.3.</span> <span class="nav-text"><a href="#&#x672A;&#x547D;&#x540D;&#x53C2;&#x6570;" class="headerlink" title="&#x672A;&#x547D;&#x540D;&#x53C2;&#x6570;"></a>&#x672A;&#x547D;&#x540D;&#x53C2;&#x6570;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#方法"><span class="nav-number">2.3.4.</span> <span class="nav-text"><a href="#&#x65B9;&#x6CD5;" class="headerlink" title="&#x65B9;&#x6CD5;"></a>&#x65B9;&#x6CD5;</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#结束语"><span class="nav-number">3.</span> <span class="nav-text"><a href="#&#x7ED3;&#x675F;&#x8BED;" class="headerlink" title="&#x7ED3;&#x675F;&#x8BED;"></a>&#x7ED3;&#x675F;&#x8BED;</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#参考文章"><span class="nav-number">3.1.</span> <span class="nav-text"><a href="#&#x53C2;&#x8003;&#x6587;&#x7AE0;" class="headerlink" title="&#x53C2;&#x8003;&#x6587;&#x7AE0;"></a>&#x53C2;&#x8003;&#x6587;&#x7AE0;</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">felix.pan</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
