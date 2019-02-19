@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="前端数据范式化前言现代web应用的飞速发展，特别是数据驱动思想指导下的React、vue等框架的出现，让我们越来越需要关注数据的组织管理。随着应用复杂度的提升，如果不对数据进行有效合理的设计拆分，那么从性能、可维护性等方面来看会逐渐成为一种阻碍。所以我们需要关注前端数据设计。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="前端数据范式化">
+<meta property="og:url" content="http://xxdy.tech/2019/02/18/normalize/index.html">
+<meta property="og:site_name" content="雨打梨梦三村边">
+<meta property="og:description" content="前端数据范式化前言现代web应用的飞速发展，特别是数据驱动思想指导下的React、vue等框架的出现，让我们越来越需要关注数据的组织管理。随着应用复杂度的提升，如果不对数据进行有效合理的设计拆分，那么从性能、可维护性等方面来看会逐渐成为一种阻碍。所以我们需要关注前端数据设计。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://p1.meituan.net/dpnewvc/79de24890fe932435cb6ee08a1da03df503526.png">
+<meta property="og:updated_time" content="2019-02-19T08:37:16.487Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="前端数据范式化">
+<meta name="twitter:description" content="前端数据范式化前言现代web应用的飞速发展，特别是数据驱动思想指导下的React、vue等框架的出现，让我们越来越需要关注数据的组织管理。随着应用复杂度的提升，如果不对数据进行有效合理的设计拆分，那么从性能、可维护性等方面来看会逐渐成为一种阻碍。所以我们需要关注前端数据设计。">
+<meta name="twitter:image" content="https://p1.meituan.net/dpnewvc/79de24890fe932435cb6ee08a1da03df503526.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://xxdy.tech/2019/02/18/normalize/"/>
+
+
+
+
+
+  <title>前端数据范式化 | 雨打梨梦三村边</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">雨打梨梦三村边</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">潇湘待雨</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://xxdy.tech/2019/02/18/normalize/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="felix.pan">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="雨打梨梦三村边">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">前端数据范式化</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-02-18T00:00:00+08:00">
+                2019-02-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="前端数据范式化"><a href="#前端数据范式化" class="headerlink" title="前端数据范式化"></a>前端数据范式化</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>现代web应用的飞速发展，特别是数据驱动思想指导下的React、vue等框架的出现，让我们越来越需要关注数据的组织管理。随着应用复杂度的提升，如果不对数据进行有效合理的设计拆分，那么从性能、可维护性等方面来看会逐渐成为一种阻碍。所以我们需要关注前端数据设计。<br><a id="more"></a><br>其实没有一种很明确的规范告诉我们具体到前端的数据结构应该如何去设计。关系数据库设计有很多范式，借鉴而不照搬结合前端自身特点，才是好的前端数据范式化的实践。  </p>
+<h2 id="范式化"><a href="#范式化" class="headerlink" title="范式化"></a>范式化</h2><p>在深入了解数据范式化之前，我们可以先看个例子</p>
+<h3 id="举个栗子："><a href="#举个栗子：" class="headerlink" title="举个栗子："></a>举个栗子：</h3><p>实际业务中，迭代比较多的业务，我们一般会配置化，即除了业务数据之外将页面布局展示相关的内容也由接口控制。<br>那么后端返回的数据可能如下： </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    info: [</span><br><span class="line">        &#123;</span><br><span class="line">            key:<span class="string">'a'</span>,</span><br><span class="line">            txt:<span class="string">'展示1'</span>,</span><br><span class="line">            value:<span class="number">0</span></span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            key:<span class="string">'b'</span>,</span><br><span class="line">            txt:<span class="string">'展示2'</span>,</span><br><span class="line">            value:<span class="number">1</span></span><br><span class="line">        &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这样响应操作的时候，需要更新每一项的值如果直接修改info这个数组，存在着很大的不便。<br>如果你说还好，但这样将就操作之后，提交的时候发现这一大串冗余数据后端也不需要呀，还是要处理value。<br>此时的数据还不是那么的复杂，不过层层嵌套的对象见过吧，让人心头一惊的数据格式，如果还在上面操作，可能下个迭代你自己都不知道到底该操作哪个字段了。</p>
+<p>这时候如果将展示和逻辑相分离，抽出来一个专门的属性用来存放与后端交互的数据，看起来是简洁了一些，后期可维护性也增强了不少。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    info: [</span><br><span class="line">        &#123;</span><br><span class="line">            key:<span class="string">'a'</span>,</span><br><span class="line">            txt:<span class="string">'展示1'</span></span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            key:<span class="string">'b'</span>,</span><br><span class="line">            txt:<span class="string">'展示2'</span></span><br><span class="line">        &#125;</span><br><span class="line">    ],</span><br><span class="line">    values:&#123;</span><br><span class="line">        a:<span class="number">0</span>,</span><br><span class="line">        b:<span class="number">1</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这样其实就可以认为是我们提到范式化或者说是扁平化了。具体到前端数据范式化之前  我们来看看数据库的范式吧  </p>
+<h3 id="具体到前端数据范式化之前-我们来看看数据库的范式吧"><a href="#具体到前端数据范式化之前-我们来看看数据库的范式吧" class="headerlink" title="具体到前端数据范式化之前  我们来看看数据库的范式吧"></a>具体到前端数据范式化之前  我们来看看数据库的范式吧</h3><p><strong>什么是范式：</strong><br>顾名思义，一个规范模式(虽然有点粗暴，但好像就是这么回事)。<br>本来想找段定义贴在下面，不过看了看太生硬了，写下个人见解好了。  </p>
+<p><strong>第一范式 1NF</strong><br>表的列具有原子性，不可再分解。<br>只要是关系型数据库就满足1NF  </p>
+<p><strong>第二范式 2NF</strong><br>前提是满足1NF，在1NF的基础上。每一行或者实例必须唯一可以被区分，即需要我们说的主键(key)。  </p>
+<p><strong>第三范式 3NF</strong><br>满足1NF和2NF，且一个数据库表中不包含已在其他表中包含的非主键字段。<br>也就是说表中不冗余，可以通过关系从其他表中获取就不要单独存放了，也就是相关信息可以通过外键相关联。 有个图表达的很不错，借来一用：<br><img src="https://p1.meituan.net/dpnewvc/79de24890fe932435cb6ee08a1da03df503526.png"></p>
+<p>当然后面还有其他范式这里就先不提了。  </p>
+<p>总结一下，范式就是为了减少冗余，提高效率<br>遵循的范式越高，冗余越小，但也要具体分析，不可一味追求符合范式。<br>有些时候一昧的追求范式减少冗余，反而会降低数据读写的效率，这个时候就要反范式，利用空间来换时间。  </p>
+<h3 id="redux中的state设计要求"><a href="#redux中的state设计要求" class="headerlink" title="redux中的state设计要求"></a>redux中的state设计要求</h3><p>redux针对state的设计也提出了范式化的要求，对于复杂的数据结构，除了数据重复之外，还可能有下面这些问题:    </p>
+<ul>
+<li>当数据在多处冗余后，需要更新时，很难保证所有的数据都进行更新。</li>
+<li>嵌套的数据意味着 reducer 逻辑嵌套更多、复杂度更高。尤其是在打算更新深层嵌套数据时。  </li>
+<li>不可变的数据在更新时需要状态树的祖先数据进行复制和更新，并且新的对象引用会导致与之 connect 的所有 UI 组件都重复 render。尽管要显示的数据没有发生任何改变，对深层嵌套的数据对象进行更新也会强制完全无关的 UI 组件重复 render  </li>
+</ul>
+<p>所以，在 Redux Store 中管理关系数据或嵌套数据的推荐做法是将这一部分视为数据库，并且将数据按范式化存储。<br>有这么几点概念：  </p>
+<ul>
+<li>任何类型的数据在 state 中都有自己的 “表”。</li>
+<li>任何 “数据表” 应将各个项目存储在对象中，其中每个项目的 ID 作为 key，项目本身作为 value。</li>
+<li>任何对单个项目的引用都应该根据存储项目的 ID 来完成。</li>
+<li>ID 数组应该用于排序。   </li>
+</ul>
+<h3 id="具体实践-Normalizr"><a href="#具体实践-Normalizr" class="headerlink" title="具体实践-Normalizr"></a>具体实践-Normalizr</h3><p>这里就需要提到<a href="https://github.com/paularmstrong/normalizr" target="_blank" rel="noopener">Normalizr</a>了，对于复杂数据管理，基本都会提到它。其作用很直白的通过其简介体现出来：Normalizes nested JSON according to a schema。依据模式规范化的处理json。<br>其用法这里就不介绍了，只提供下转换前后的数据做个对比。有兴趣的大家去官网一看便知。  </p>
+<p><strong>原始数据:</strong>  </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="string">"id"</span>: <span class="string">"123"</span>,</span><br><span class="line">  <span class="string">"author"</span>: &#123;</span><br><span class="line">    <span class="string">"id"</span>: <span class="string">"1"</span>,</span><br><span class="line">    <span class="string">"name"</span>: <span class="string">"Paul"</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="string">"title"</span>: <span class="string">"My awesome blog post"</span>,</span><br><span class="line">  <span class="string">"comments"</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="string">"id"</span>: <span class="string">"324"</span>,</span><br><span class="line">      <span class="string">"commenter"</span>: &#123;</span><br><span class="line">        <span class="string">"id"</span>: <span class="string">"2"</span>,</span><br><span class="line">        <span class="string">"name"</span>: <span class="string">"Nicole"</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br><span class="line"><span class="string">``</span><span class="string">`  </span></span><br><span class="line"><span class="string">**转换后**  </span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">`</span><span class="string">``</span>js</span><br><span class="line">&#123;</span><br><span class="line">  result: <span class="string">"123"</span>,</span><br><span class="line">  entities: &#123;</span><br><span class="line">    <span class="string">"articles"</span>: &#123;</span><br><span class="line">      <span class="string">"123"</span>: &#123;</span><br><span class="line">        id: <span class="string">"123"</span>,</span><br><span class="line">        author: <span class="string">"1"</span>,</span><br><span class="line">        title: <span class="string">"My awesome blog post"</span>,</span><br><span class="line">        comments: [ <span class="string">"324"</span> ]</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="string">"users"</span>: &#123;</span><br><span class="line">      <span class="string">"1"</span>: &#123; <span class="string">"id"</span>: <span class="string">"1"</span>, <span class="string">"name"</span>: <span class="string">"Paul"</span> &#125;,</span><br><span class="line">      <span class="string">"2"</span>: &#123; <span class="string">"id"</span>: <span class="string">"2"</span>, <span class="string">"name"</span>: <span class="string">"Nicole"</span> &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="string">"comments"</span>: &#123;</span><br><span class="line">      <span class="string">"324"</span>: &#123; <span class="attr">id</span>: <span class="string">"324"</span>, <span class="string">"commenter"</span>: <span class="string">"2"</span> &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这样的数据就比较符合我们前面redux设计要求了。</p>
+<h2 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h2><p>到这里前端数据的范式化也就介绍的差不多了，一个感悟是js中的数据结构设计何尝不是数据库设计，去遵循相应的范式会让我们的数据结构更加清晰明了。就算开始没考虑到，随着业务量级的上升原本结构遇到的问题，开发的时候自然也会去往更优雅的方向去靠，这就是进步的过程。<br>通篇文章为个人见解，抛砖引玉有不对的地方欢迎指出</p>
+<h3 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章:"></a>参考文章:</h3><p><a href="https://blog.csdn.net/qq_35401191/article/details/82760301" target="_blank" rel="noopener">https://blog.csdn.net/qq_35401191/article/details/82760301</a><br><a href="https://zhuanlan.zhihu.com/p/36487766" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/36487766</a><br><a href="http://cn.redux.js.org/docs/recipes/reducers/NormalizingStateShape.html" target="_blank" rel="noopener">http://cn.redux.js.org/docs/recipes/reducers/NormalizingStateShape.html</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/01/10/ifelse/" rel="next" title="其实我们可以少写点if else和switch">
+                <i class="fa fa-chevron-left"></i> 其实我们可以少写点if else和switch
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">felix.pan</p>
+              <p class="site-description motion-element" itemprop="description">潇湘待雨个人博客</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">25</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#前端数据范式化"><span class="nav-number">1.</span> <span class="nav-text"><a href="#&#x524D;&#x7AEF;&#x6570;&#x636E;&#x8303;&#x5F0F;&#x5316;" class="headerlink" title="&#x524D;&#x7AEF;&#x6570;&#x636E;&#x8303;&#x5F0F;&#x5316;"></a>&#x524D;&#x7AEF;&#x6570;&#x636E;&#x8303;&#x5F0F;&#x5316;</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.1.</span> <span class="nav-text"><a href="#&#x524D;&#x8A00;" class="headerlink" title="&#x524D;&#x8A00;"></a>&#x524D;&#x8A00;</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#范式化"><span class="nav-number">1.2.</span> <span class="nav-text"><a href="#&#x8303;&#x5F0F;&#x5316;" class="headerlink" title="&#x8303;&#x5F0F;&#x5316;"></a>&#x8303;&#x5F0F;&#x5316;</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#举个栗子："><span class="nav-number">1.2.1.</span> <span class="nav-text"><a href="#&#x4E3E;&#x4E2A;&#x6817;&#x5B50;&#xFF1A;" class="headerlink" title="&#x4E3E;&#x4E2A;&#x6817;&#x5B50;&#xFF1A;"></a>&#x4E3E;&#x4E2A;&#x6817;&#x5B50;&#xFF1A;</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#具体到前端数据范式化之前-我们来看看数据库的范式吧"><span class="nav-number">1.2.2.</span> <span class="nav-text"><a href="#&#x5177;&#x4F53;&#x5230;&#x524D;&#x7AEF;&#x6570;&#x636E;&#x8303;&#x5F0F;&#x5316;&#x4E4B;&#x524D;-&#x6211;&#x4EEC;&#x6765;&#x770B;&#x770B;&#x6570;&#x636E;&#x5E93;&#x7684;&#x8303;&#x5F0F;&#x5427;" class="headerlink" title="&#x5177;&#x4F53;&#x5230;&#x524D;&#x7AEF;&#x6570;&#x636E;&#x8303;&#x5F0F;&#x5316;&#x4E4B;&#x524D;  &#x6211;&#x4EEC;&#x6765;&#x770B;&#x770B;&#x6570;&#x636E;&#x5E93;&#x7684;&#x8303;&#x5F0F;&#x5427;"></a>&#x5177;&#x4F53;&#x5230;&#x524D;&#x7AEF;&#x6570;&#x636E;&#x8303;&#x5F0F;&#x5316;&#x4E4B;&#x524D;  &#x6211;&#x4EEC;&#x6765;&#x770B;&#x770B;&#x6570;&#x636E;&#x5E93;&#x7684;&#x8303;&#x5F0F;&#x5427;</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#redux中的state设计要求"><span class="nav-number">1.2.3.</span> <span class="nav-text"><a href="#redux&#x4E2D;&#x7684;state&#x8BBE;&#x8BA1;&#x8981;&#x6C42;" class="headerlink" title="redux&#x4E2D;&#x7684;state&#x8BBE;&#x8BA1;&#x8981;&#x6C42;"></a>redux&#x4E2D;&#x7684;state&#x8BBE;&#x8BA1;&#x8981;&#x6C42;</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#具体实践-Normalizr"><span class="nav-number">1.2.4.</span> <span class="nav-text"><a href="#&#x5177;&#x4F53;&#x5B9E;&#x8DF5;-Normalizr" class="headerlink" title="&#x5177;&#x4F53;&#x5B9E;&#x8DF5;-Normalizr"></a>&#x5177;&#x4F53;&#x5B9E;&#x8DF5;-Normalizr</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#结束语"><span class="nav-number">1.3.</span> <span class="nav-text"><a href="#&#x7ED3;&#x675F;&#x8BED;" class="headerlink" title="&#x7ED3;&#x675F;&#x8BED;"></a>&#x7ED3;&#x675F;&#x8BED;</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#参考文章"><span class="nav-number">1.3.1.</span> <span class="nav-text"><a href="#&#x53C2;&#x8003;&#x6587;&#x7AE0;" class="headerlink" title="&#x53C2;&#x8003;&#x6587;&#x7AE0;:"></a>&#x53C2;&#x8003;&#x6587;&#x7AE0;:</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">felix.pan</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
