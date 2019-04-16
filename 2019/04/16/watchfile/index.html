@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="前言随着前端技术的飞速发展，前端开发也从原始的刀耕火种，向着工程化效率化的方向发展。在各种开发框架之外，打包编译等技术也是层出不穷，开发体验也是越来越好。例如HMR，让我们的更新可以即时可见，告别了手动F5的情况。其实现就是监听文件变化自动调用构建过程。下面就关注下如何实现node监听文件变化。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="node.js监听文件变化的实现">
+<meta property="og:url" content="http://xxdy.tech/2019/04/16/watchfile/index.html">
+<meta property="og:site_name" content="雨打梨梦三村边">
+<meta property="og:description" content="前言随着前端技术的飞速发展，前端开发也从原始的刀耕火种，向着工程化效率化的方向发展。在各种开发框架之外，打包编译等技术也是层出不穷，开发体验也是越来越好。例如HMR，让我们的更新可以即时可见，告别了手动F5的情况。其实现就是监听文件变化自动调用构建过程。下面就关注下如何实现node监听文件变化。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://xxdy.tech/img/watchfile/watchFile.gif">
+<meta property="og:image" content="http://xxdy.tech/img/watchfile/watch1.gif">
+<meta property="og:image" content="http://xxdy.tech/img/watchfile/md51.gif">
+<meta property="og:updated_time" content="2019-04-16T14:19:11.683Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="node.js监听文件变化的实现">
+<meta name="twitter:description" content="前言随着前端技术的飞速发展，前端开发也从原始的刀耕火种，向着工程化效率化的方向发展。在各种开发框架之外，打包编译等技术也是层出不穷，开发体验也是越来越好。例如HMR，让我们的更新可以即时可见，告别了手动F5的情况。其实现就是监听文件变化自动调用构建过程。下面就关注下如何实现node监听文件变化。">
+<meta name="twitter:image" content="http://xxdy.tech/img/watchfile/watchFile.gif">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://xxdy.tech/2019/04/16/watchfile/"/>
+
+
+
+
+
+  <title>node.js监听文件变化的实现 | 雨打梨梦三村边</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">雨打梨梦三村边</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">潇湘待雨</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://xxdy.tech/2019/04/16/watchfile/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="felix.pan">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="雨打梨梦三村边">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">node.js监听文件变化的实现</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-04-16T00:00:00+08:00">
+                2019-04-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>随着前端技术的飞速发展，前端开发也从原始的刀耕火种，向着工程化效率化的方向发展。在各种开发框架之外，打包编译等技术也是层出不穷，开发体验也是越来越好。例如HMR，让我们的更新可以即时可见，告别了手动F5的情况。其实现就是监听文件变化自动调用构建过程。下面就关注下如何实现node监听文件变化。<br><a id="more"></a></p>
+<h2 id="场景"><a href="#场景" class="headerlink" title="场景"></a>场景</h2><p>假定要监听index.js，每当内容更改重新编译。<br>我们就用简单的console来标识执行编译。下面就是实现该功能。</p>
+<h2 id="node原生API"><a href="#node原生API" class="headerlink" title="node原生API"></a>node原生API</h2><h3 id="fs-watchFile"><a href="#fs-watchFile" class="headerlink" title="fs.watchFile"></a>fs.watchFile</h3><p>翻下node的文档就会看到一个满足我们需求的Api<a href="https://nodejs.org/docs/latest-v9.x/api/fs.html#fs_fs_watchfile_filename_options_listener" target="_blank" rel="noopener">fs.watchFile</a>(毕竟是文件相关的操作，很大可能就在fs模块下面了)。  </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fs.watchFile(filename[, options], listener)</span><br></pre></td></tr></table></figure>
+<ul>
+<li>filename 显然就是文件名</li>
+<li><p>options 可选 对象 包含以下两个属性</p>
+<ul>
+<li>persistent  文件被监听时进程是否继续，默认true </li>
+<li>interval 多长时间轮训一次目标文件，默认5007毫秒</li>
+</ul>
+</li>
+<li>listener 事件回调 包含两个参数<ul>
+<li>current  当前文件stat对象</li>
+<li>prev 之前文件stat对象  </li>
+</ul>
+</li>
+</ul>
+<p>看完参数信息，不知道大家有没有从其参数属性中得到点什么特别的信息。特别是interval选项和listener中的回调参数。</p>
+<p>监控filename对应文件，每当访问文件时会触发回调。  </p>
+<p>这里每当访问文件时会触发，实际指的是每次切换之后再次进入文件，然后保存之后，无论是否做了修改都会出发回调。  </p>
+<p>另外轮询事件和文件对象，是不是可以猜测，其实现监听的原理，固定时间轮询文件状态，然后将前后的状态返回，将判断交给使用者。<br>所以node也建议，如果要获取文件修改，那么需要根据stat对象的修改时间来进行对比，即比较 curr.mtime 和 prev.mtime。  </p>
+<p>这样就有点问题，我们先看下例子，会更清晰一点。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>)</span><br><span class="line"><span class="keyword">const</span> filePath = <span class="string">'./index.js'</span></span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">`正在监听 <span class="subst">$&#123;filePath&#125;</span>`</span>);</span><br><span class="line">fs.watchFile(filePath, (cur, prv) =&gt; &#123;</span><br><span class="line">    <span class="keyword">if</span> (filePath) &#123;</span><br><span class="line">        <span class="comment">// 打印出修改时间</span></span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">`cur.mtime&gt;&gt;<span class="subst">$&#123;cur.mtime.toLocaleString()&#125;</span>`</span>)</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">`prv.mtime&gt;&gt;<span class="subst">$&#123;prv.mtime.toLocaleString()&#125;</span>`</span>)</span><br><span class="line">        <span class="comment">// 根据修改时间判断做下区分，以分辨是否更改</span></span><br><span class="line">        <span class="keyword">if</span> (cur.mtime != prv.mtime)&#123;</span><br><span class="line">            <span class="built_in">console</span>.log(<span class="string">`<span class="subst">$&#123;filePath&#125;</span>文件发生更新`</span>)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>然后测试结果如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 运行 </span></span><br><span class="line">node watch1.js</span><br><span class="line"><span class="comment">// 1、访问index.js 不做修改，然后保存</span></span><br><span class="line"><span class="comment">// 2、切换文件，再次访问，不做修改，只报错</span></span><br><span class="line"><span class="comment">// 3、编辑内容，并保存</span></span><br></pre></td></tr></table></figure>
+<p><img src="/img/watchfile/watchFile.gif"></p>
+<p>可以看到1、2两步，并没有实际修改内容，然而我们并没有办法区分。只要你是切换之后再保存，修改时间戳mtime就发生变化。<br>另外响应时间真的很慢，毕竟是轮询。</p>
+<p>对于这些问题，其实官网也给了一句话：  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Using fs.watch() is more efficient than fs.watchFile and fs.unwatchFile. fs.watch should be used instead of fs.watchFile and fs.unwatchFile when possible.</span><br></pre></td></tr></table></figure>
+<p><strong>能用fs.watch的情况就不要用watchFile了。一是效率，二是不能准确获知修改状态 三是只能监听单独文件</strong><br>对于实际开发过程中，显然我们想要关注的是源文件夹的变动。  </p>
+<h3 id="fs-watch"><a href="#fs-watch" class="headerlink" title="fs.watch"></a>fs.watch</h3><p>首先用法如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fs.watch(filename[, options][, listener])</span><br></pre></td></tr></table></figure>
+<p>跟fs.watchFile比较类似。 </p>
+<ul>
+<li>filename 显然就是文件名</li>
+<li><p>options 可选 对象或者字符串 包含以下三个属性</p>
+<ul>
+<li>persistent  文件被监听时进程是否继续，默认true</li>
+<li>recursive 是否监控所有子目录，默认false 即当前目录，true为所有子目录。 </li>
+<li>encoding 指定传递给回调事件的文件名称，默认utf8</li>
+</ul>
+</li>
+<li>listener 事件回调 包含两个参数<ul>
+<li>eventType  事件类型，rename 或者 change</li>
+<li>filename 当前变更文件的文件名</li>
+</ul>
+</li>
+</ul>
+<p>options如果是字符串，指的是encoding。  </p>
+<p>监听filename对应的文件或者文件夹(recursive参数也体现出来这一特性)，返回一个fs.FSWatcher对象。</p>
+<p>该功能的实现依赖于底层操作系统的对于文件更改的通知。 所以就存在一个问题，可能不同平台的实现不太相同。<br>如下示例1：  </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>)</span><br><span class="line"><span class="keyword">const</span> filePath = <span class="string">'./'</span>    </span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">`正在监听 <span class="subst">$&#123;filePath&#125;</span>`</span>);</span><br><span class="line">fs.watch(filePath,(event,filename)=&gt;&#123;</span><br><span class="line">    <span class="keyword">if</span> (filename)&#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">`<span class="subst">$&#123;filename&#125;</span>文件发生更新`</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>一个比较明显的优势就体现出来了：响应比较及时，相比于轮询，效率肯定更高。  </p>
+<p>不过这样修改并保存的时候回发现同样有点问题。<br>直接保存，显示两次更新<br>修改文件之后，同样显示两次更新(mac系统上是两次，其他系统可能有所差别)<br><img src="/img/watchfile/watch1.gif"><br>这样可能是于操作系统对文件修改的事件支持有关，在保存的时候出发了不止一次。<br>下面聚焦于回调事件的参数，event对应事件类型，是否可以判断事件类型为change呢，才执行呢，忽略空保存。  </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>)</span><br><span class="line"><span class="keyword">const</span> filePath = <span class="string">'./'</span>    </span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">`正在监听 <span class="subst">$&#123;filePath&#125;</span>`</span>);</span><br><span class="line">fs.watch(filePath,(event,filename)=&gt;&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">`event类型<span class="subst">$&#123;event&#125;</span>`</span>)</span><br><span class="line">    <span class="keyword">if</span> (filename &amp;&amp; event == <span class="string">'change'</span>) &#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">`<span class="subst">$&#123;filename&#125;</span>文件发生更新`</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>不过实际上，空的保存event也是change，另外不同平台event的实现可能也有所不同。这种方式要pass掉。   </p>
+<h4 id="校验变更时间"><a href="#校验变更时间" class="headerlink" title="校验变更时间"></a>校验变更时间</h4><p>显然从上面的例子可以看到，变更时间依然不可控。因为每次保存，node对应stat对象依然会修改。</p>
+<h4 id="对比文件内容"><a href="#对比文件内容" class="headerlink" title="对比文件内容"></a>对比文件内容</h4><p>只能选择这种方式来判断是否是否更新。例如md5:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>),</span><br><span class="line">    md5 = <span class="built_in">require</span>(<span class="string">'md5'</span>);</span><br><span class="line"><span class="keyword">const</span> filePath = <span class="string">'./'</span>    </span><br><span class="line"><span class="keyword">let</span> preveMd5 = <span class="literal">null</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">`正在监听 <span class="subst">$&#123;filePath&#125;</span>`</span>);</span><br><span class="line">fs.watch(filePath,(event,filename)=&gt;&#123;</span><br><span class="line">    <span class="keyword">var</span> currentMd5 = md5(fs.readFileSync(filePath + filename))</span><br><span class="line">    <span class="keyword">if</span> (currentMd5 == preveMd5) &#123;</span><br><span class="line">        <span class="keyword">return</span></span><br><span class="line">    &#125;</span><br><span class="line">    preveMd5 = currentMd5</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">`<span class="subst">$&#123;filePath&#125;</span>文件发生更新`</span>)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>先保存当前文件md5值，每次文件变化时(即保存操作响应之后)，每次都获取文件的md5然后进行对比，看是否发生变化。<br><img src="/img/watchfile/md51.gif"><br>不过这样可以看到，当初次保存时，都会执行一次，因为初始值为null的缘故。这样可以加个兼容，根据是否第一次保存来判断好了。</p>
+<h4 id="优化"><a href="#优化" class="headerlink" title="优化"></a>优化</h4><p>对于不同的操作系统，可能保存时触发的回调不止一个(mac上到没出现)。为了避免这种实时响应对应的频繁触发，可以引入debounce函数来保证性能。  </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>),</span><br><span class="line">    md5 = <span class="built_in">require</span>(<span class="string">'md5'</span>);</span><br><span class="line"><span class="keyword">let</span> preveMd5 = <span class="literal">null</span>,</span><br><span class="line">    fsWait = <span class="literal">false</span></span><br><span class="line"><span class="keyword">const</span> filePath = <span class="string">'./'</span>    </span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">`正在监听 <span class="subst">$&#123;filePath&#125;</span>`</span>);</span><br><span class="line">fs.watch(filePath,(event,filename)=&gt;&#123;</span><br><span class="line">    <span class="keyword">if</span> (filename)&#123;</span><br><span class="line">        <span class="keyword">if</span> (fsWait) <span class="keyword">return</span>;</span><br><span class="line">        fsWait = setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">            fsWait = <span class="literal">false</span>;</span><br><span class="line">        &#125;, <span class="number">100</span>)</span><br><span class="line">        <span class="keyword">var</span> currentMd5 = md5(fs.readFileSync(filePath + filename))</span><br><span class="line">        <span class="keyword">if</span> (currentMd5 == preveMd5)&#123;</span><br><span class="line">            <span class="keyword">return</span> </span><br><span class="line">        &#125;</span><br><span class="line">        preveMd5 = currentMd5</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">`<span class="subst">$&#123;filePath&#125;</span>文件发生更新`</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<h2 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h2><p>到这里，node监听文件的实现就结束了。做个学习笔记，来做个参考记录。实现起来并不难，但是要实际应用的话需要考虑的方面就比较多了。还是推荐开源框架node-watch、chokidar等，各方面实现的都比较完善。   </p>
+<h4 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h4><p><a href="https://nodejs.org/docs/latest-v9.x/api/fs.html#fs_fs_watchfile_filename_options_listener" target="_blank" rel="noopener">node文档</a><br><a href="https://thisdavej.com/how-to-watch-for-files-changes-in-node-js/" target="_blank" rel="noopener">How to Watch for Files Changes in Node.js</a><br><a href="https://stackfame.com/nodejs-monitor-file-changes" target="_blank" rel="noopener">Nodejs Monitor File Changes</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/04/15/content-type/" rel="next" title="http Content-Type 知多少">
+                <i class="fa fa-chevron-left"></i> http Content-Type 知多少
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">felix.pan</p>
+              <p class="site-description motion-element" itemprop="description">潇湘待雨个人博客</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">27</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text"><a href="#&#x524D;&#x8A00;" class="headerlink" title="&#x524D;&#x8A00;"></a>&#x524D;&#x8A00;</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#场景"><span class="nav-number">2.</span> <span class="nav-text"><a href="#&#x573A;&#x666F;" class="headerlink" title="&#x573A;&#x666F;"></a>&#x573A;&#x666F;</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#node原生API"><span class="nav-number">3.</span> <span class="nav-text"><a href="#node&#x539F;&#x751F;API" class="headerlink" title="node&#x539F;&#x751F;API"></a>node&#x539F;&#x751F;API</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#fs-watchFile"><span class="nav-number">3.1.</span> <span class="nav-text"><a href="#fs-watchFile" class="headerlink" title="fs.watchFile"></a>fs.watchFile</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#fs-watch"><span class="nav-number">3.2.</span> <span class="nav-text"><a href="#fs-watch" class="headerlink" title="fs.watch"></a>fs.watch</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#校验变更时间"><span class="nav-number">3.2.1.</span> <span class="nav-text"><a href="#&#x6821;&#x9A8C;&#x53D8;&#x66F4;&#x65F6;&#x95F4;" class="headerlink" title="&#x6821;&#x9A8C;&#x53D8;&#x66F4;&#x65F6;&#x95F4;"></a>&#x6821;&#x9A8C;&#x53D8;&#x66F4;&#x65F6;&#x95F4;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#对比文件内容"><span class="nav-number">3.2.2.</span> <span class="nav-text"><a href="#&#x5BF9;&#x6BD4;&#x6587;&#x4EF6;&#x5185;&#x5BB9;" class="headerlink" title="&#x5BF9;&#x6BD4;&#x6587;&#x4EF6;&#x5185;&#x5BB9;"></a>&#x5BF9;&#x6BD4;&#x6587;&#x4EF6;&#x5185;&#x5BB9;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#优化"><span class="nav-number">3.2.3.</span> <span class="nav-text"><a href="#&#x4F18;&#x5316;" class="headerlink" title="&#x4F18;&#x5316;"></a>&#x4F18;&#x5316;</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#结束语"><span class="nav-number">4.</span> <span class="nav-text"><a href="#&#x7ED3;&#x675F;&#x8BED;" class="headerlink" title="&#x7ED3;&#x675F;&#x8BED;"></a>&#x7ED3;&#x675F;&#x8BED;</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#参考文章"><span class="nav-number">4.0.1.</span> <span class="nav-text"><a href="#&#x53C2;&#x8003;&#x6587;&#x7AE0;" class="headerlink" title="&#x53C2;&#x8003;&#x6587;&#x7AE0;"></a>&#x53C2;&#x8003;&#x6587;&#x7AE0;</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">felix.pan</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
