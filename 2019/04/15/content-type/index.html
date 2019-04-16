@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="前言作为前端开发，工作中少不了与接口请求打交道。对于常见的content-type，也能说上来几个，感觉还算了解。直到有一天，我要在查看google的批量接口合并时发现Content-Type: multipart/mixed以及Content-Type: application/http时，有点措手不及。赶紧深入研究下Content-Type相关内容来弥补下自己的不足，从前端的角度来看看Cont">
+<meta property="og:type" content="article">
+<meta property="og:title" content="http Content-Type 知多少">
+<meta property="og:url" content="http://xxdy.tech/2019/04/15/content-type/index.html">
+<meta property="og:site_name" content="雨打梨梦三村边">
+<meta property="og:description" content="前言作为前端开发，工作中少不了与接口请求打交道。对于常见的content-type，也能说上来几个，感觉还算了解。直到有一天，我要在查看google的批量接口合并时发现Content-Type: multipart/mixed以及Content-Type: application/http时，有点措手不及。赶紧深入研究下Content-Type相关内容来弥补下自己的不足，从前端的角度来看看Cont">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://user-gold-cdn.xitu.io/2019/4/14/16a1c6f743d8b587?w=1600&h=468&f=jpeg&s=128274">
+<meta property="og:updated_time" content="2019-04-16T03:47:48.777Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="http Content-Type 知多少">
+<meta name="twitter:description" content="前言作为前端开发，工作中少不了与接口请求打交道。对于常见的content-type，也能说上来几个，感觉还算了解。直到有一天，我要在查看google的批量接口合并时发现Content-Type: multipart/mixed以及Content-Type: application/http时，有点措手不及。赶紧深入研究下Content-Type相关内容来弥补下自己的不足，从前端的角度来看看Cont">
+<meta name="twitter:image" content="https://user-gold-cdn.xitu.io/2019/4/14/16a1c6f743d8b587?w=1600&h=468&f=jpeg&s=128274">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://xxdy.tech/2019/04/15/content-type/"/>
+
+
+
+
+
+  <title>http Content-Type 知多少 | 雨打梨梦三村边</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">雨打梨梦三村边</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">潇湘待雨</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://xxdy.tech/2019/04/15/content-type/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="felix.pan">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="雨打梨梦三村边">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">http Content-Type 知多少</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-04-15T00:00:00+08:00">
+                2019-04-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>作为前端开发，工作中少不了与接口请求打交道。对于常见的content-type，也能说上来几个，感觉还算了解。直到有一天，我要在查看google的批量接口合并时发现Content-Type: multipart/mixed以及Content-Type: application/http时，有点措手不及。赶紧深入研究下Content-Type相关内容来弥补下自己的不足，从前端的角度来看看Content-Type。<br><a id="more"></a></p>
+<h2 id="Content-Type"><a href="#Content-Type" class="headerlink" title="Content-Type"></a>Content-Type</h2><p>Content-Type:实体头部用于指示资源的MIME类型。如果未指定 ContentType，默认为text/html<br>有两种场景：<br>在请求中 (如POST 或 PUT)，客户端告诉服务器实际发送的数据类型。</p>
+<p>在响应中，Content-Type标头告诉客户端实际返回的内容的内容类型。浏览器会在某些情况下进行MIME查找，并不一定遵循此标题的值; 为了防止这种行为，可以将标题 X-Content-Type-Options 设置为 nosniff。</p>
+<p>简而言之就是标识资源或者所需资源的MIME类型。  </p>
+<p>句法如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Content-Type: text/html; charset=utf-8</span><br><span class="line">Content-Type: multipart/form-data; boundary=something</span><br></pre></td></tr></table></figure>
+<p>参数一般media-type、charset、boundary三种。<br>我们的关注点在于media-type的取值以及其适用场景。</p>
+<h3 id="media-type"><a href="#media-type" class="headerlink" title="media-type"></a>media-type</h3><p>更多的是作为MIME type( Multipurpose Internet Mail Extensions)出现，即多用途Internet邮件扩展。<br>其目的是用一种标准化的方式来标识文档的性质和格式。<br>浏览器通常使用MIME类型（而不是文件扩展名）来确定如何处理文档；<br>因此服务器设置正确以将正确的MIME类型附加到响应对象的头部是非常重要的。  </p>
+<h4 id="结构"><a href="#结构" class="headerlink" title="结构"></a>结构</h4><p>MIME 组成结构如下：<br>由类型与子类型两个字符串中间用’/‘分隔而组成。不允许空格存在。对大小写不敏感，但传统都是小写。<br>允许额外参数，如后面所示：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">type/subtype;parameter=value</span><br></pre></td></tr></table></figure>
+<p>其中：</p>
+<ul>
+<li>type对应通用类目，例如：text/video等。</li>
+<li>subtype对应准确的子类，例如text下面细分为plain(纯文本)、html(html源码)、calendar（.ics）文件等。</li>
+<li>parameter可选一般是charset或者bundaary等。</li>
+</ul>
+<h3 id="Types"><a href="#Types" class="headerlink" title="Types"></a>Types</h3><p>类目包括两种类型：独立类型和Multipart类型。</p>
+<h4 id="独立类型"><a href="#独立类型" class="headerlink" title="独立类型"></a>独立类型</h4><p>独立类型指只代表一个单独的文件或者媒体的类型，表明了对文件的分类。<br>常见类型和实例如下：</p>
+<ul>
+<li>text<br>文本数据包括一些人类可读的内容或者源码。例如：text/plain, text/csv, text/html.</li>
+<li>application<br>数据为二进制的一种，例如application/octet-stream,application/pdf,application/pkcs8,application/zip.  </li>
+<li>audio<br>音频或者音乐数据，例如audio/mpeg, audio/vorbis</li>
+<li>video<br>视频数据或者文件，例如video/mp4</li>
+<li>image<br>图像或图形数据，包括位图和矢量静止图像以及静止图像格式的动画版本。例如image/gif, image/png, image/jpeg, image/bmp, image/webp, image/x-icon</li>
+</ul>
+<h4 id="Multipart类型"><a href="#Multipart类型" class="headerlink" title="Multipart类型"></a>Multipart类型</h4><p>Multipart类型指明被分为几部分的一种文档的类目，且经常有不同的MIME类型。也可以用来表示属于相同事物的多个且独立的文件，这些独立的文件构成一个复杂的文档。在电子邮件场景中常见。<br>有两种Multipart类型：message和multipart。</p>
+<ul>
+<li>message<br>一个包括其他信息的消息，常用于下面的场景，例如指明一个邮件包含转发信息或者在多种信息的情况下，允许以chunk的形式发送数据量很大的信息。包括message/rfc822和message/partial</li>
+<li>multipart<br>由多个不同MIME类型组件构成的数据，例如 multipart/form-data(使用FormData API生成的数据) </li>
+</ul>
+<p>看完了基本定义，下面看看常见的类型及使用场景。</p>
+<h3 id="常见类型及使用场景"><a href="#常见类型及使用场景" class="headerlink" title="常见类型及使用场景"></a>常见类型及使用场景</h3><h4 id="静态资源、图片、媒体类"><a href="#静态资源、图片、媒体类" class="headerlink" title="静态资源、图片、媒体类"></a>静态资源、图片、媒体类</h4><p>对于静态资源、图片和媒体类，也就是text、image、video等比较清晰明了，不再详细描述。</p>
+<h4 id="application类"><a href="#application类" class="headerlink" title="application类"></a>application类</h4><ul>
+<li><p><strong>application/json</strong>  </p>
+<p>随着json这种轻量级的数据交互格式的流行，特别是和脚本交互的便利，使得在前后接口中，越来越多采用json格式。对于http协议来说，最终传输的还是字符。这里不再多进行描述。  </p>
+</li>
+<li><p><strong>application/x-www-form-urlencoded</strong><br>作为表单提交中默认的类型，其表明数据以标准的编码格式被编码为键值对。<br>数据被编码成以 ‘&amp;’ 分隔的键-值对, 同时以 ‘=’ 分隔键和值. 非字母或数字的字符会被 percent-encoding: 这也就是为什么这种类型不支持二进制数据的原因 (应使用 multipart/form-data 代替).<br> 我们以新浪为例，可以看到其请求报文(formdata那里选择，view source可以看得比较清楚)：<br><img src="https://user-gold-cdn.xitu.io/2019/4/14/16a1c6f743d8b587?w=1600&h=468&f=jpeg&s=128274">  </p>
+</li>
+<li><p><strong>multipart/form-data</strong><br>这里为了对比，就也放到这里来说了。<br>一般用于涉及文件的表单提交，用于post请求，其格式如下：  </p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line">  Content-Type: multipart/form-data; boundary=aBoundaryString</span><br><span class="line">  ```  </span><br><span class="line">  其中boundary指明了请求体中每部分的分割符(对于multipart的类目，都会存在该字段，以区分请求体中数据的分割)，其请求体中则是对应表单每部分的内容。每部分都会有自己的请求体和相关内容。  </span><br><span class="line">例如如下的文档结构：  </span><br><span class="line">  </span><br><span class="line">```html</span><br><span class="line">  &lt;form action="http://localhost:8000/" method="post" enctype="multipart/form-data"&gt;</span><br><span class="line">  &lt;input type="text" name="myTextField"&gt;</span><br><span class="line">  &lt;input type="checkbox" name="myCheckBox"&gt;Check&lt;/input&gt;</span><br><span class="line">  &lt;input type="file" name="myFile"&gt;</span><br><span class="line">  &lt;button&gt;Send the file&lt;/button&gt;</span><br><span class="line">&lt;/form&gt;</span><br><span class="line">```   </span><br><span class="line"></span><br><span class="line">其请求信息如下：  </span><br><span class="line"></span><br><span class="line">```js</span><br><span class="line">POST / HTTP/1.1</span><br><span class="line">Host: localhost:8000</span><br><span class="line">User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:50.0) Gecko/20100101 Firefox/50.0</span><br><span class="line">Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8</span><br><span class="line">Accept-Language: en-US,en;q=0.5</span><br><span class="line">Accept-Encoding: gzip, deflate</span><br><span class="line">Connection: keep-alive</span><br><span class="line">Upgrade-Insecure-Requests: 1</span><br><span class="line">// 以 ---------------------------8721656041911415653955004498 作为分割符</span><br><span class="line">Content-Type: multipart/form-data; boundary=---------------------------8721656041911415653955004498</span><br><span class="line">Content-Length: 465</span><br><span class="line"></span><br><span class="line">-----------------------------8721656041911415653955004498</span><br><span class="line">// 分段一 文本相关信息</span><br><span class="line">Content-Disposition: form-data; name="myTextField"</span><br><span class="line">// 对应value</span><br><span class="line">Test</span><br><span class="line">-----------------------------8721656041911415653955004498</span><br><span class="line">// checkbox</span><br><span class="line">Content-Disposition: form-data; name="myCheckBox"</span><br><span class="line"></span><br><span class="line">on</span><br><span class="line">-----------------------------8721656041911415653955004498</span><br><span class="line">// 文件</span><br><span class="line">Content-Disposition: form-data; name="myFile"; filename="test.txt"</span><br><span class="line">Content-Type: text/plain</span><br><span class="line"></span><br><span class="line">Simple file.</span><br><span class="line">-----------------------------8721656041911415653955004498--</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>application/javascript application/x-javascript text/javascript</strong><br>对于js文件，常见MIME类型为text/javascript，但是前两种应该会有见到过。三者之间多少还是有点区别的。<br>传统的js程序对应的MIME类型为text/javascript，其他的还有”application/x-javascript”（x前缀表示这是实验性类型）， 因为text/javascript是最常见的类型，所以RFC4329定义了“text/javascript”。不过，js文件实际上并不是真正的文本类型，因此推出了application/javascript类型，不过现行的支持性并不好，所以常常会用application/x-javascript来代替。   </p>
+</li>
+<li><p><strong>application/zip application/gzip</strong><br> zip 对应zip压缩文件，gzip是若干种文件压缩程序的简称，通常指GNU计划的实现，此处的gzip代表GNU zip。</p>
+</li>
+<li><p><strong>application/http</strong><br> 这一种大家可能就不常见了，从类型可以知道，是http请求，但具体用途还是要翻下<a href="https://www.iana.org/assignments/media-types/application/http" target="_blank" rel="noopener">规范</a>才能找到的。<br> 此类型包含的http请求包含在binary消息体中，在邮件协议传输中需要指明Content-Transfer-Encoding。<br> 在批量处理请求时会遇到，其表现如下：  </p>
+</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">--batch_0123456789</span><br><span class="line">Content-Type: application/http</span><br><span class="line">Content-ID: </span><br><span class="line"><span class="comment">// 必须的字段，表明传送内容的编码格式 即二进制流</span></span><br><span class="line">Content-Transfer-Encoding: binary</span><br><span class="line"></span><br><span class="line">POST https:<span class="comment">//www.googleapis.com/analytics/v3/management/accounts/XXXXXX/webproperties/UA-XXXXXX-1/customDimensions</span></span><br><span class="line">Content-Type: application/json</span><br><span class="line">Content-Length: <span class="number">68</span></span><br><span class="line"></span><br><span class="line">&#123;</span><br><span class="line"> <span class="string">"name"</span>: <span class="string">"Campaign Group"</span>,</span><br><span class="line"> <span class="string">"scope"</span>: <span class="string">"SESSION"</span>,</span><br><span class="line"> <span class="string">"active"</span>: <span class="literal">true</span></span><br><span class="line">&#125; </span><br><span class="line"><span class="string">``</span><span class="string">`    </span></span><br><span class="line"><span class="string">    </span></span><br><span class="line"><span class="string">#### multipart类型</span></span><br><span class="line"><span class="string">正如上文所述，multipart一般对应单个消息头对应多个消息体。</span></span><br><span class="line"><span class="string">常见语法如下:</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">`</span><span class="string">``</span>js</span><br><span class="line">Content-Type: multipart/mixed; boundary=gc0p4Jq0M2Yt08jU534c0p</span><br><span class="line"><span class="string">``</span><span class="string">`  </span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">其中boundary字段是必须的，用于区分消息体中的数据边界，一般是两个'-'的格式作为该端的开头，例如：</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">`</span><span class="string">``</span>js</span><br><span class="line">--gc0p4Jq0M2Yt08jU534c0p</span><br></pre></td></tr></table></figure>
+<p>我们主要关注的也就是下面几种：  </p>
+<ul>
+<li><p><strong>multipart/form-data</strong><br>见上面application部分。下面这几部分可能不是那么常见，不过还是可以了解一下，以免遇到的时候懵逼。  </p>
+</li>
+<li><p><strong>multipart/mixed</strong><br>该类型用于，消息体由多个独立的部分组成且想连续的展示。并且子数据类型有任一种无法被识别(此处指被浏览器直接识别的类型，例如text等)的类型时，都应该为mixed。<br>概括而言就是该邮件有二进制内容，非可以直接识别的内容  </p>
+</li>
+</ul>
+<p>例如：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">POST /batch/farm/v1 HTTP/<span class="number">1.1</span></span><br><span class="line">Authorization: Bearer your_auth_token</span><br><span class="line">Host: www.googleapis.com</span><br><span class="line">Content-Type: multipart/mixed; boundary=batch_foobarbaz</span><br><span class="line">Content-Length: total_content_length</span><br><span class="line"></span><br><span class="line">--batch_foobarbaz</span><br><span class="line"><span class="comment">// 子内容为http请求 不过是boundary编码过的</span></span><br><span class="line">Content-Type: application/http</span><br><span class="line">Content-ID: &lt;item1:12930812@barnyard.example.com&gt;</span><br><span class="line"></span><br><span class="line">GET /farm/v1/animals/pony</span><br><span class="line"></span><br><span class="line">--batch_foobarbaz</span><br><span class="line">Content-Type: application/http</span><br><span class="line">Content-ID: &lt;item2:12930812@barnyard.example.com&gt;</span><br><span class="line"></span><br><span class="line">PUT /farm/v1/animals/sheep</span><br><span class="line">Content-Type: application/json</span><br><span class="line">Content-Length: part_content_length</span><br><span class="line">If-Match: "etag/sheep"</span><br><span class="line"></span><br><span class="line">&#123;</span><br><span class="line">  "animalName": "sheep",</span><br><span class="line">  "animalAge": "5"</span><br><span class="line">  "peltColor": "green",</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">--batch_foobarbaz</span><br><span class="line">Content-Type: application/http</span><br><span class="line">Content-ID: &lt;item3:12930812@barnyard.example.com&gt;</span><br><span class="line"></span><br><span class="line">GET /farm/v1/animals</span><br><span class="line">If-None-Match: "etag/animals"</span><br><span class="line"></span><br><span class="line">--batch_foobarbaz--</span><br></pre></td></tr></table></figure>
+<p>这里消息体中的内容就是http请求，在google批量接口协议中用使用。</p>
+<ul>
+<li><strong>multipart/alternative</strong><br>该类型与mixed的语法相同，但语义不同。其表明，消息体中的不同部分应该是相同信息的不同版本。即内容相同传输类型不同，以适应不同的接受者。<br>还是举例：  </li>
+</ul>
+<pre><code class="js">From:  Nathaniel Borenstein &lt;nsb@bellcore.com&gt; 
+To: Ned Freed &lt;ned@innosoft.com&gt; 
+Subject: Formatted text mail 
+MIME-Version: <span class="number">1.0</span> 
+Content-Type: multipart/alternative; boundary=boundary42 
+
+
+--boundary42 
+Content-Type: text/plain; charset=us-ascii 
+
+...plain text version <span class="keyword">of</span> message goes here.... 
+
+--boundary42 
+Content-Type: text/richtext 
+
+.... richtext version <span class="keyword">of</span> same message goes here ... 
+--boundary42 
+Content-Type: text/x-whatever 
+
+.... fanciest formatted version <span class="keyword">of</span> same  message  goes  here 
+... 
+--boundary42-- 
+</code></pre>
+<p>假如用户的系统可以识别 text/x-whatever 类型，那么其将会只看到这一部分。不同的用户看到什么内容取决于其系统支持何种类型。   </p>
+<h2 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h2><h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p><a href="https://developers.google.com/drive/api/v3/batch?hl=zh-cn" target="_blank" rel="noopener">https://developers.google.com/drive/api/v3/batch?hl=zh-cn</a><br><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types" target="_blank" rel="noopener">https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types</a><br><a href="https://www.w3.org/Protocols/rfc1341/7_2_Multipart.html" target="_blank" rel="noopener">https://www.w3.org/Protocols/rfc1341/7_2_Multipart.html</a>  </p>
+<p>到这里常见的content-type就介绍完了，感谢以上参考文章，此外水平有限可能有错误之处欢迎指出。对于前端同学来说，网络请求也是我们需要关注的部分，提升深度的同时也要注意落款广度，希望对有需要的同学有所裨益。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/02/18/normalize/" rel="next" title="前端数据范式化">
+                <i class="fa fa-chevron-left"></i> 前端数据范式化
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">felix.pan</p>
+              <p class="site-description motion-element" itemprop="description">潇湘待雨个人博客</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">26</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text"><a href="#&#x524D;&#x8A00;" class="headerlink" title="&#x524D;&#x8A00;"></a>&#x524D;&#x8A00;</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Content-Type"><span class="nav-number">2.</span> <span class="nav-text"><a href="#Content-Type" class="headerlink" title="Content-Type"></a>Content-Type</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#media-type"><span class="nav-number">2.1.</span> <span class="nav-text"><a href="#media-type" class="headerlink" title="media-type"></a>media-type</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#结构"><span class="nav-number">2.1.1.</span> <span class="nav-text"><a href="#&#x7ED3;&#x6784;" class="headerlink" title="&#x7ED3;&#x6784;"></a>&#x7ED3;&#x6784;</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Types"><span class="nav-number">2.2.</span> <span class="nav-text"><a href="#Types" class="headerlink" title="Types"></a>Types</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#独立类型"><span class="nav-number">2.2.1.</span> <span class="nav-text"><a href="#&#x72EC;&#x7ACB;&#x7C7B;&#x578B;" class="headerlink" title="&#x72EC;&#x7ACB;&#x7C7B;&#x578B;"></a>&#x72EC;&#x7ACB;&#x7C7B;&#x578B;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Multipart类型"><span class="nav-number">2.2.2.</span> <span class="nav-text"><a href="#Multipart&#x7C7B;&#x578B;" class="headerlink" title="Multipart&#x7C7B;&#x578B;"></a>Multipart&#x7C7B;&#x578B;</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#常见类型及使用场景"><span class="nav-number">2.3.</span> <span class="nav-text"><a href="#&#x5E38;&#x89C1;&#x7C7B;&#x578B;&#x53CA;&#x4F7F;&#x7528;&#x573A;&#x666F;" class="headerlink" title="&#x5E38;&#x89C1;&#x7C7B;&#x578B;&#x53CA;&#x4F7F;&#x7528;&#x573A;&#x666F;"></a>&#x5E38;&#x89C1;&#x7C7B;&#x578B;&#x53CA;&#x4F7F;&#x7528;&#x573A;&#x666F;</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#静态资源、图片、媒体类"><span class="nav-number">2.3.1.</span> <span class="nav-text"><a href="#&#x9759;&#x6001;&#x8D44;&#x6E90;&#x3001;&#x56FE;&#x7247;&#x3001;&#x5A92;&#x4F53;&#x7C7B;" class="headerlink" title="&#x9759;&#x6001;&#x8D44;&#x6E90;&#x3001;&#x56FE;&#x7247;&#x3001;&#x5A92;&#x4F53;&#x7C7B;"></a>&#x9759;&#x6001;&#x8D44;&#x6E90;&#x3001;&#x56FE;&#x7247;&#x3001;&#x5A92;&#x4F53;&#x7C7B;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#application类"><span class="nav-number">2.3.2.</span> <span class="nav-text"><a href="#application&#x7C7B;" class="headerlink" title="application&#x7C7B;"></a>application&#x7C7B;</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#结束语"><span class="nav-number">3.</span> <span class="nav-text"><a href="#&#x7ED3;&#x675F;&#x8BED;" class="headerlink" title="&#x7ED3;&#x675F;&#x8BED;"></a>&#x7ED3;&#x675F;&#x8BED;</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#参考"><span class="nav-number">3.1.</span> <span class="nav-text"><a href="#&#x53C2;&#x8003;" class="headerlink" title="&#x53C2;&#x8003;"></a>&#x53C2;&#x8003;</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">felix.pan</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
