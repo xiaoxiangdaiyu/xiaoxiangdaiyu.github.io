@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="前言作为前端状态管理器，这个比较跨时代的工具库redux有很多实现和思想值得我们思考。在深入源码之前，我们可以相关注下一些常见问题，这样带着问题去看实现，也能更加清晰的了解。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="带着问题看redux源码">
+<meta property="og:url" content="http://xxdy.tech/2019/05/21/redux/redux2/index.html">
+<meta property="og:site_name" content="雨打梨梦三村边">
+<meta property="og:description" content="前言作为前端状态管理器，这个比较跨时代的工具库redux有很多实现和思想值得我们思考。在深入源码之前，我们可以相关注下一些常见问题，这样带着问题去看实现，也能更加清晰的了解。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://xxdy.tech/img/redux/middleware.jpg">
+<meta property="og:updated_time" content="2019-05-21T07:51:48.594Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="带着问题看redux源码">
+<meta name="twitter:description" content="前言作为前端状态管理器，这个比较跨时代的工具库redux有很多实现和思想值得我们思考。在深入源码之前，我们可以相关注下一些常见问题，这样带着问题去看实现，也能更加清晰的了解。">
+<meta name="twitter:image" content="http://xxdy.tech/img/redux/middleware.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://xxdy.tech/2019/05/21/redux/redux2/"/>
+
+
+
+
+
+  <title>带着问题看redux源码 | 雨打梨梦三村边</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">雨打梨梦三村边</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">潇湘待雨</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://xxdy.tech/2019/05/21/redux/redux2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="felix.pan">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="雨打梨梦三村边">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">带着问题看redux源码</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-05-21T00:00:00+08:00">
+                2019-05-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>作为前端状态管理器，这个比较跨时代的工具库redux有很多实现和思想值得我们思考。在深入源码之前，我们可以相关注下一些常见问题，这样带着问题去看实现，也能更加清晰的了解。<br><a id="more"></a></p>
+<h3 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h3><p>大概看了下主要有这么几个：  </p>
+<ol>
+<li>redux三大原则<br>这个可以直接参考<a href="http://cn.redux.js.org/docs/introduction/ThreePrinciples.html" target="_blank" rel="noopener">官方文档</a></li>
+<li>redux 的优缺点。 关于优缺点，太主观了大家见仁见智。</li>
+<li>redux中间件相关，洋葱模型是什么，常见中间件。</li>
+</ol>
+<h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>有关acton，reducer相关的部分可以看<a href="https://juejin.im/post/5b208ef06fb9a01e615ed8cb" target="_blank" rel="noopener">我前面的文章</a>。我们主要关注针对store和中间件相关的部分来解读。</p>
+<h2 id="store的创建"><a href="#store的创建" class="headerlink" title="store的创建"></a>store的创建</h2><p>作为维护和管理数据的部分，store在redux中的作用十分重要。在action发出指令，reduxer进行数据更新之后，监听数据变化和同步数据更新的操作都要借助store来实现。  </p>
+<h3 id="createStore-输入和输出"><a href="#createStore-输入和输出" class="headerlink" title="createStore 输入和输出"></a>createStore 输入和输出</h3><p>首先看下createStore的使用,即常见的就是接受经过<a href="https://juejin.im/post/5b208ef06fb9a01e615ed8cb#heading-8" target="_blank" rel="noopener">combineReducers处理之后的reducer</a>和初始的state</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> reducer <span class="keyword">from</span> <span class="string">'./reducers'</span></span><br><span class="line"><span class="keyword">const</span> store = createStore(reducer,initialState)</span><br></pre></td></tr></table></figure>
+<p>此外还可以接受第三个参数enhancer(增强器,一般就是applyMiddleware)</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 创建管理state 树的Redux store</span></span><br><span class="line"><span class="comment"> * 应用中只能存在一个store，为了区分不同action对应的reducer，</span></span><br><span class="line"><span class="comment"> * 可以通过combineReducers来关联不同的reducer</span></span><br><span class="line"><span class="comment"> * @param &#123;Function&#125; reducer   combineReducers关联之后的reducer</span></span><br><span class="line"><span class="comment"> * @param &#123;Object&#125; preloadedState 初始state</span></span><br><span class="line"><span class="comment"> * @param &#123;Function&#125; enhancer 可以增强store功能的函数，例如中间件等。唯一适合</span></span><br><span class="line"><span class="comment"> * @returns 返回一个Store 以维护state和监听变化  </span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="function"><span class="keyword">function</span> <span class="title">createStore</span>(<span class="params">reducer, preloadedState, enhancer</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 如果第二个参数为func，redux认为忽略了初始state，而是</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> preloadedState === <span class="string">'function'</span> &amp;&amp; <span class="keyword">typeof</span> enhancer === <span class="string">'undefined'</span>) &#123;</span><br><span class="line">    <span class="comment">// enhancer增强剂，即利用中间件等来增强redux能力</span></span><br><span class="line">    enhancer = preloadedState</span><br><span class="line">    preloadedState = <span class="literal">undefined</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 返回具有dispatch等属性的对象 即store</span></span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    dispatch,</span><br><span class="line">    subscribe,</span><br><span class="line">    getState,</span><br><span class="line">    replaceReducer,</span><br><span class="line">    [$$observable]: observable</span><br><span class="line">  &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p>按照一般的执行顺序，我们先看下对于参数的处理(平时大家也是一样，一个函数，执行之前尽量判断入参是否符合预期，避免直接处理造成的错误)</p>
+<h3 id="入参处理"><a href="#入参处理" class="headerlink" title="入参处理"></a>入参处理</h3><p>对于三个参数，后两个是非必填的，但如果第二个参数是function，reduxe认为其实encher，不然初始状态是个函数不符合redux的预期，只能这样处理了。   </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 如果第二个参数为func，redux认为忽略了初始state，而是</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> preloadedState === <span class="string">'function'</span> &amp;&amp; <span class="keyword">typeof</span> enhancer === <span class="string">'undefined'</span>) &#123;</span><br><span class="line">    <span class="comment">// enhancer增强剂，即利用中间件等来增强redux能力</span></span><br><span class="line">    enhancer = preloadedState</span><br><span class="line">    preloadedState = <span class="literal">undefined</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> enhancer !== <span class="string">'undefined'</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">typeof</span> enhancer !== <span class="string">'function'</span>) &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">Error</span>(<span class="string">'Expected the enhancer to be a function.'</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 对于存在的enhancer,高阶函数函数的用法，</span></span><br><span class="line">    <span class="comment">// 接受createStore返回一个增加功能之后的函数，然后再传入相关reducer得到store。</span></span><br><span class="line">    <span class="keyword">return</span> enhancer(createStore)(reducer, preloadedState)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> reducer !== <span class="string">'function'</span>) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">Error</span>(<span class="string">'Expected the reducer to be a function.'</span>)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 一切符合预期，没有 enhancer，那么初始赋值</span></span><br><span class="line">  <span class="keyword">let</span> currentReducer = reducer</span><br><span class="line">  <span class="keyword">let</span> currentState = preloadedState</span><br><span class="line">  <span class="keyword">let</span> currentListeners = []</span><br><span class="line">  <span class="comment">// 监听队列</span></span><br><span class="line">  <span class="keyword">let</span> nextListeners = currentListeners</span><br><span class="line">  <span class="comment">// dispatch标识</span></span><br><span class="line">  <span class="keyword">let</span> isDispatching = <span class="literal">false</span></span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 初始状态更新之后，声明init状态完成。</span></span><br><span class="line">  dispatch(&#123; <span class="attr">type</span>: ActionTypes.INIT &#125;)</span><br></pre></td></tr></table></figure>
+<h3 id="dispatch的实现"><a href="#dispatch的实现" class="headerlink" title="dispatch的实现"></a>dispatch的实现</h3><p>dispatch的作用就是根据action，执行对应reducer以更新state。并执行监听队列。<br>下面就来看dispatch的用法和实现。<br>常见使用：<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// redux要求 参数必须为纯对象</span></span><br><span class="line">dispatch(&#123; <span class="attr">type</span>: ActionTypes.INIT &#125;)</span><br></pre></td></tr></table></figure></p>
+<p>那么对于纯对象，redux做了些什么呢  </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">  * 通知方法，参数为纯的js对象，标明更新内容</span></span><br><span class="line"><span class="comment">  * @param &#123;Object&#125; action </span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"> <span class="function"><span class="keyword">function</span> <span class="title">dispatch</span>(<span class="params">action</span>) </span>&#123;</span><br><span class="line">   <span class="comment">// 是否满足纯净对象</span></span><br><span class="line">   <span class="keyword">if</span> (!isPlainObject(action)) &#123;</span><br><span class="line">     <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">Error</span>(</span><br><span class="line">       <span class="string">'省略'</span></span><br><span class="line">     )</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="comment">// 必须的type是否存在 </span></span><br><span class="line">   <span class="keyword">if</span> (<span class="keyword">typeof</span> action.type === <span class="string">'undefined'</span>) &#123;</span><br><span class="line">     <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">Error</span>(</span><br><span class="line">       <span class="string">'省略'</span></span><br><span class="line">     )</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="comment">// 判断是否处于某个action的dispatch中，大家一起dispatch可能死循环</span></span><br><span class="line">   <span class="keyword">if</span> (isDispatching) &#123;</span><br><span class="line">     <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">Error</span>(<span class="string">'Reducers may not dispatch actions.'</span>)</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="keyword">try</span> &#123;</span><br><span class="line">     <span class="comment">// 开始dispatch，加锁，标明状态</span></span><br><span class="line">     isDispatching = <span class="literal">true</span></span><br><span class="line">     <span class="comment">// 将当前状态和更新action，传给当前reducer处理</span></span><br><span class="line">     <span class="comment">// 这里可以回想下我们reducer中的两个参数，state和action 对应的是什么</span></span><br><span class="line">     <span class="comment">/**</span></span><br><span class="line"><span class="comment">      * const todos = (state = [], action) =&gt; &#123;</span></span><br><span class="line"><span class="comment">      */</span></span><br><span class="line">     currentState = currentReducer(currentState, action)</span><br><span class="line">   &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">     <span class="comment">// 有异常，锁置为false，不影响别的dispatch</span></span><br><span class="line">     isDispatching = <span class="literal">false</span></span><br><span class="line">   &#125;</span><br><span class="line">   <span class="comment">// 执行dispatch，并且更新当前监听队列为 最新队列</span></span><br><span class="line">   <span class="keyword">const</span> listeners = (currentListeners = nextListeners)</span><br><span class="line">   <span class="comment">// 依次执行，监听器</span></span><br><span class="line">   <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; listeners.length; i++) &#123;</span><br><span class="line">     <span class="keyword">const</span> listener = listeners[i]</span><br><span class="line">     listener()</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="keyword">return</span> action</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p>createStore初始化完成之后会执行dispatch({ type: ActionTypes.INIT })，此时执行初始化操作。</p>
+<p>我们要关注下currentState的计算，<br>将currentState，action传给reducer处理，然后更新currentState。</p>
+<p>针对初始化来说currentState其实就是initState：  </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 初始化状态</span></span><br><span class="line"><span class="keyword">let</span> currentState = preloadedState</span><br><span class="line"><span class="comment">/****省略***/</span></span><br><span class="line"><span class="comment">// 这里可以回想下我们reducer中的两个参数，state和action对应的值</span></span><br><span class="line">currentState = currentReducer(currentState, action)</span><br><span class="line"><span class="string">``</span><span class="string">` </span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">reducer示例：</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">`</span><span class="string">``</span>js</span><br><span class="line"><span class="keyword">const</span> todos = <span class="function">(<span class="params">state = [], action</span>) =&gt;</span> &#123;</span><br><span class="line"><span class="keyword">switch</span> (action.type) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">'ADD_TODO'</span>:</span><br><span class="line">      <span class="keyword">return</span> [</span><br><span class="line">        ...state,</span><br><span class="line">        &#123;</span><br><span class="line">          id: action.id,</span><br><span class="line">          text: action.text,</span><br><span class="line">          completed: <span class="literal">false</span></span><br><span class="line">        &#125;</span><br><span class="line">      ]</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="getSate实现"><a href="#getSate实现" class="headerlink" title="getSate实现"></a>getSate实现</h3><p>getState就是获得store的state。这个比较简单。当结合react-redux使用时，其会帮我们进行操作。我们就不用自行调用这个方法了，所以不要疑惑从哪里获取的state。  </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">   * 返回应用当前状态</span></span><br><span class="line"><span class="comment">   * 不过需要看下当前是否有更新正在进行，是的话则提示</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">getState</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="comment">// 判断是否isDispatching 中</span></span><br><span class="line">    <span class="keyword">if</span> (isDispatching) &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">Error</span>(<span class="string">'省略'</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> currentState</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="subscribe"><a href="#subscribe" class="headerlink" title="subscribe"></a>subscribe</h3><p>subscribe是比较重要的一个方法，用来供我们监听状态的变化，以执行相关操作。<br>例如react-redux中的handleChange 会对是否pure组件及state进行对比，以提升渲染效率。   </p>
+<p><strong>示例：</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">this</span>.unsubscribe = <span class="keyword">this</span>.store.subscribe(<span class="keyword">this</span>.handleChange.bind(<span class="keyword">this</span>))</span><br></pre></td></tr></table></figure>
+<p><strong>实现：</strong><br>返回的是一个函数，可以进行unsubscribe操作。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** </span></span><br><span class="line"><span class="comment">   * 订阅通知</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">subscribe</span>(<span class="params">listener</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">typeof</span> listener !== <span class="string">'function'</span>) &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">Error</span>(<span class="string">'Expected the listener to be a function.'</span>)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (isDispatching) &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">Error</span>(</span><br><span class="line">        <span class="string">'省略'</span></span><br><span class="line">      )</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 是否已经监听过</span></span><br><span class="line">    <span class="keyword">let</span> isSubscribed = <span class="literal">true</span></span><br><span class="line">    <span class="comment">// 监听队列是否相同，区分开，操作nextListeners</span></span><br><span class="line">    ensureCanMutateNextListeners()</span><br><span class="line">    <span class="comment">// 新增监听事件</span></span><br><span class="line">    nextListeners.push(listener)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="function"><span class="keyword">function</span> <span class="title">unsubscribe</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">      <span class="keyword">if</span> (!isSubscribed) &#123;</span><br><span class="line">        <span class="keyword">return</span></span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (isDispatching) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">Error</span>(</span><br><span class="line">          <span class="string">'省略'</span></span><br><span class="line">        )</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">// 注册完成，可以进行取消操作</span></span><br><span class="line">      isSubscribed = <span class="literal">false</span></span><br><span class="line">      <span class="comment">// 保持事件队列 同步</span></span><br><span class="line">      ensureCanMutateNextListeners()</span><br><span class="line">      <span class="keyword">const</span> index = nextListeners.indexOf(listener)</span><br><span class="line">      <span class="comment">// 删除监听事件</span></span><br><span class="line">      nextListeners.splice(index, <span class="number">1</span>)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="replaceReducer"><a href="#replaceReducer" class="headerlink" title="replaceReducer"></a>replaceReducer</h3><p>这个开发比较少用，用于热更新</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 用于reducer的热替换，开发中一般不会直接使用</span></span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">replaceReducer</span>(<span class="params">nextReducer</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">typeof</span> nextReducer !== <span class="string">'function'</span>) &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">Error</span>(<span class="string">'Expected the nextReducer to be a function.'</span>)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    currentReducer = nextReducer</span><br><span class="line">    <span class="comment">// 更新值之后，进行dispatch。</span></span><br><span class="line">    dispatch(&#123; <span class="attr">type</span>: ActionTypes.REPLACE &#125;)</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p> 到这里createStore已经解析完成了，大家应该了解该方法到底做了些什么操作吧。<br> 简单概括一下就是：接收reducer和initState，返回一个store 对象。该对象提供了监听、分发等功能，以实现数据的更新。</p>
+<h2 id="实际使用中的问题"><a href="#实际使用中的问题" class="headerlink" title="实际使用中的问题"></a>实际使用中的问题</h2><p>经过上面的解读之后,对于redux的常规应用应该有所了解了。不过实际使用中可能会遇到些问题。<br>例如action要求是纯对象，而我们获取数据一般是异步的，这就需要借助redux-thunk这个中间件了。<br>actionCreater返回一个函数。如下：  </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">func1</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="function"><span class="params">dispatch</span> =&gt;</span> &#123;</span><br><span class="line">      dispatch(&#123;</span><br><span class="line">      type:<span class="string">'test'</span>,</span><br><span class="line">      data:<span class="string">'a'</span></span><br><span class="line">      &#125;)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在了解如何实现之前，需要先看下redux中间件的原理。<br>因为reducer更多的关注的是数据的操作，对于一些公共的方法，需要抽离出来，不过这些方法在何时使用呢，redux为我们提供了中间件来满足需求。</p>
+<h2 id="redux中间件原理"><a href="#redux中间件原理" class="headerlink" title="redux中间件原理"></a>redux中间件原理</h2><p>redux 借鉴了 Koa里 middleware 的思想，即鼎鼎大名的洋葱模型。<br><img src="/img/redux/middleware.jpg"></p>
+<p>不过这里请求对应的是dispatch的过程。  </p>
+<p>每次dispatch的过程中，都要依次将中间件执行一遍。<br>遇到阻塞或者操作完成，执行下个中间件，直到执行完成，以便我们事先日志，监控、异常上报等功能。<br>那么redux 又是如何支持中间件的呢。这就离不开applyMiddleware了。<br>这里前面的</p>
+<h3 id="applyMiddleware实现思路"><a href="#applyMiddleware实现思路" class="headerlink" title="applyMiddleware实现思路"></a>applyMiddleware实现思路</h3><p>实现思想比较简单,通过科里化和compose，为符合规范的中间件分配访问dispatch和store的途径，以便在不同阶段来自定义数据更新。<br>例如异步操作，返回的不是对象，那么就执行返回的函数，然后调用下一个中间件。等异步请求结束，再次dispatch 对应的action。   </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="function"><span class="keyword">function</span> <span class="title">applyMiddleware</span>(<span class="params">...middlewares</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="function"><span class="params">createStore</span> =&gt;</span> (...args) =&gt; &#123;</span><br><span class="line">    <span class="keyword">const</span> store = createStore(...args)</span><br><span class="line">    <span class="keyword">let</span> dispatch = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">Error</span>(</span><br><span class="line">        <span class="string">`Dispatching while constructing your middleware is not allowed. `</span> +</span><br><span class="line">          <span class="string">`Other middleware would not be applied to this dispatch.`</span></span><br><span class="line">      )</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 赋予每个中间件访问store的能力。</span></span><br><span class="line">    <span class="keyword">const</span> middlewareAPI = &#123;</span><br><span class="line">      getState: store.getState,</span><br><span class="line">      <span class="comment">// 箭头函数保存dispatch，保证其的同步更新</span></span><br><span class="line">      dispatch: <span class="function">(<span class="params">...args</span>) =&gt;</span> dispatch(...args)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 串联中间件，并赋予每个中间件访问dispatch的能力。</span></span><br><span class="line">    <span class="keyword">const</span> chain = middlewares.map(<span class="function"><span class="params">middleware</span> =&gt;</span> middleware(middlewareAPI))</span><br><span class="line">    <span class="comment">// 关联dispatch与中间件，组合调用之后得到类似下面的新对象</span></span><br><span class="line">    <span class="comment">// dispatch = f1(f2(f3(store.dispatch))));</span></span><br><span class="line">    dispatch = compose(...chain)(store.dispatch)</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">      ...store,</span><br><span class="line">      dispatch</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这样执行之后返回的，对象就是增强之后的store了。</p>
+<h3 id="compose的实现"><a href="#compose的实现" class="headerlink" title="compose的实现"></a>compose的实现</h3><p>redux中compose是柯里化函数的一个示例，目的是将函数串联起来。 </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 函数组合，科里化的串联</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="function"><span class="keyword">function</span> <span class="title">compose</span>(<span class="params">...funcs</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (funcs.length === <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="function"><span class="params">arg</span> =&gt;</span> arg</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (funcs.length === <span class="number">1</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> funcs[<span class="number">0</span>]</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> funcs.reduce(<span class="function">(<span class="params">a, b</span>) =&gt;</span> (...args) =&gt; a(b(...args)))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="结合redux-thunk示例"><a href="#结合redux-thunk示例" class="headerlink" title="结合redux-thunk示例"></a>结合redux-thunk示例</h3><p>redux-thunk源码，实现也很优雅，对于返回的function，将dispatch等参数传递进去，然后执行，等待回调异步完成再dispatch。对于正常对象则进行下一步。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">createThunkMiddleware</span>(<span class="params">extraArgument</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="function">(<span class="params">&#123; dispatch, getState &#125;</span>) =&gt;</span> next =&gt; <span class="function"><span class="params">action</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">// 每次dispatch的时候都会进行判断，如果是个函数，那就执行函数，不再进行下一步吧，这样就避免了，函数不满足action要求的问题</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">typeof</span> action === <span class="string">'function'</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> action(dispatch, getState, extraArgument);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> next(action);</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> thunk = createThunkMiddleware();</span><br><span class="line">thunk.withExtraArgument = createThunkMiddleware;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> thunk;</span><br></pre></td></tr></table></figure>
+<p>那么实际使用时,在createStore时加入该中间件即可：  </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; createStore, applyMiddleware &#125; <span class="keyword">from</span> <span class="string">'redux'</span></span><br><span class="line"><span class="keyword">import</span> thunk <span class="keyword">from</span> <span class="string">'redux-thunk'</span>;</span><br><span class="line"><span class="keyword">const</span> store = createStore(</span><br><span class="line">  reducer,</span><br><span class="line">  applyMiddleware(&#123;</span><br><span class="line">  ...middleware,</span><br><span class="line">  thunk&#125;)</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>那么到这里对于redux的中间件 也就是问题2，我想大家也比较清楚了。<br>对于常见中间件可以参考</p>
+<h2 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h2><p>加上<a href="https://juejin.im/post/5b208ef06fb9a01e615ed8cb#heading-8" target="_blank" rel="noopener">重读redux源码一</a>和<a href="https://juejin.im/post/5ce25a76e51d4510835e01f3" target="_blank" rel="noopener">带着问题看 react-redux 源码实现</a>总算将redux及react-redux重读了一遍。可能有人会说道这些源码，看完也会忘，有这个必要吗。我感觉分情况来看，如果我们只是使用，那么看官方文档就可以了，当遇到某些疑问好像找不到贴切解释的时候，不放一看。<br>此外也是学习大佬们的设计思路和实现方式，有的放矢才能开卷有益。  </p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/05/20/react-redux/" rel="next" title="带着问题看 react-redux 源码">
+                <i class="fa fa-chevron-left"></i> 带着问题看 react-redux 源码
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">felix.pan</p>
+              <p class="site-description motion-element" itemprop="description">潇湘待雨个人博客</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text"><a href="#&#x524D;&#x8A00;" class="headerlink" title="&#x524D;&#x8A00;"></a>&#x524D;&#x8A00;</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#常见问题"><span class="nav-number">1.1.</span> <span class="nav-text"><a href="#&#x5E38;&#x89C1;&#x95EE;&#x9898;" class="headerlink" title="&#x5E38;&#x89C1;&#x95EE;&#x9898;"></a>&#x5E38;&#x89C1;&#x95EE;&#x9898;</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#背景"><span class="nav-number">1.2.</span> <span class="nav-text"><a href="#&#x80CC;&#x666F;" class="headerlink" title="&#x80CC;&#x666F;"></a>&#x80CC;&#x666F;</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#store的创建"><span class="nav-number">2.</span> <span class="nav-text"><a href="#store&#x7684;&#x521B;&#x5EFA;" class="headerlink" title="store&#x7684;&#x521B;&#x5EFA;"></a>store&#x7684;&#x521B;&#x5EFA;</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#createStore-输入和输出"><span class="nav-number">2.1.</span> <span class="nav-text"><a href="#createStore-&#x8F93;&#x5165;&#x548C;&#x8F93;&#x51FA;" class="headerlink" title="createStore &#x8F93;&#x5165;&#x548C;&#x8F93;&#x51FA;"></a>createStore &#x8F93;&#x5165;&#x548C;&#x8F93;&#x51FA;</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#入参处理"><span class="nav-number">2.2.</span> <span class="nav-text"><a href="#&#x5165;&#x53C2;&#x5904;&#x7406;" class="headerlink" title="&#x5165;&#x53C2;&#x5904;&#x7406;"></a>&#x5165;&#x53C2;&#x5904;&#x7406;</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#dispatch的实现"><span class="nav-number">2.3.</span> <span class="nav-text"><a href="#dispatch&#x7684;&#x5B9E;&#x73B0;" class="headerlink" title="dispatch&#x7684;&#x5B9E;&#x73B0;"></a>dispatch&#x7684;&#x5B9E;&#x73B0;</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#getSate实现"><span class="nav-number">2.4.</span> <span class="nav-text"><a href="#getSate&#x5B9E;&#x73B0;" class="headerlink" title="getSate&#x5B9E;&#x73B0;"></a>getSate&#x5B9E;&#x73B0;</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#subscribe"><span class="nav-number">2.5.</span> <span class="nav-text"><a href="#subscribe" class="headerlink" title="subscribe"></a>subscribe</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#replaceReducer"><span class="nav-number">2.6.</span> <span class="nav-text"><a href="#replaceReducer" class="headerlink" title="replaceReducer"></a>replaceReducer</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实际使用中的问题"><span class="nav-number">3.</span> <span class="nav-text"><a href="#&#x5B9E;&#x9645;&#x4F7F;&#x7528;&#x4E2D;&#x7684;&#x95EE;&#x9898;" class="headerlink" title="&#x5B9E;&#x9645;&#x4F7F;&#x7528;&#x4E2D;&#x7684;&#x95EE;&#x9898;"></a>&#x5B9E;&#x9645;&#x4F7F;&#x7528;&#x4E2D;&#x7684;&#x95EE;&#x9898;</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#redux中间件原理"><span class="nav-number">4.</span> <span class="nav-text"><a href="#redux&#x4E2D;&#x95F4;&#x4EF6;&#x539F;&#x7406;" class="headerlink" title="redux&#x4E2D;&#x95F4;&#x4EF6;&#x539F;&#x7406;"></a>redux&#x4E2D;&#x95F4;&#x4EF6;&#x539F;&#x7406;</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#applyMiddleware实现思路"><span class="nav-number">4.1.</span> <span class="nav-text"><a href="#applyMiddleware&#x5B9E;&#x73B0;&#x601D;&#x8DEF;" class="headerlink" title="applyMiddleware&#x5B9E;&#x73B0;&#x601D;&#x8DEF;"></a>applyMiddleware&#x5B9E;&#x73B0;&#x601D;&#x8DEF;</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#compose的实现"><span class="nav-number">4.2.</span> <span class="nav-text"><a href="#compose&#x7684;&#x5B9E;&#x73B0;" class="headerlink" title="compose&#x7684;&#x5B9E;&#x73B0;"></a>compose&#x7684;&#x5B9E;&#x73B0;</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#结合redux-thunk示例"><span class="nav-number">4.3.</span> <span class="nav-text"><a href="#&#x7ED3;&#x5408;redux-thunk&#x793A;&#x4F8B;" class="headerlink" title="&#x7ED3;&#x5408;redux-thunk&#x793A;&#x4F8B;"></a>&#x7ED3;&#x5408;redux-thunk&#x793A;&#x4F8B;</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#结束语"><span class="nav-number">5.</span> <span class="nav-text"><a href="#&#x7ED3;&#x675F;&#x8BED;" class="headerlink" title="&#x7ED3;&#x675F;&#x8BED;"></a>&#x7ED3;&#x675F;&#x8BED;</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">felix.pan</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
