@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="雨打梨梦三村边">
 <meta property="og:description" content="前言对于前端开发而言，babel肯定是再熟悉不过了，工作中肯定会用到。除了用作转换es6和jsx的工具之外，个人感觉babel基于抽象语法树的插件机制，给我们提供了更多的可能。关于babel相关概念和插件文档，网上是有很多的，讲的挺不错的。详细的解析推荐官方的babel插件手册。在开发插件之前，有些内容还是要了解一下的，已经熟悉的大佬们可以直接跳过。">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-08-24T07:48:19.000Z">
+<meta property="og:updated_time" content="2019-09-23T09:08:25.446Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="编写一个babel插件">
 <meta name="twitter:description" content="前言对于前端开发而言，babel肯定是再熟悉不过了，工作中肯定会用到。除了用作转换es6和jsx的工具之外，个人感觉babel基于抽象语法树的插件机制，给我们提供了更多的可能。关于babel相关概念和插件文档，网上是有很多的，讲的挺不错的。详细的解析推荐官方的babel插件手册。在开发插件之前，有些内容还是要了解一下的，已经熟悉的大佬们可以直接跳过。">
@@ -344,75 +344,9 @@
 <h3 id="构造节点"><a href="#构造节点" class="headerlink" title="构造节点"></a>构造节点</h3><p>这里将这个操作单独拿出来，toFunctionExpression这个api的说明我始终没找到。。。。可能是我没找对地方<a href="https://github.com/babel/babylon/blob/master/ast/spec.md#functiondeclaration" target="_blank" rel="noopener">FunctionExpression</a>，没办法我去babel源码里找了一遍：    </p>
 <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//@src  /babel/packages/babel-types/src/definitions/core.js</span></span><br><span class="line">defineType(<span class="string">"FunctionExpression"</span>, &#123;</span><br><span class="line">  inherits: <span class="string">"FunctionDeclaration"</span>,</span><br><span class="line">  <span class="comment">//....</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//又找到 FunctionDeclaration</span></span><br><span class="line">defineType(<span class="string">"FunctionDeclaration"</span>, &#123;</span><br><span class="line">  <span class="comment">//这里才看到参数: id,params,body..</span></span><br><span class="line">  builder: [<span class="string">"id"</span>, <span class="string">"params"</span>, <span class="string">"body"</span>, <span class="string">"generator"</span>, <span class="string">"async"</span>],</span><br><span class="line">  visitor: [<span class="string">"id"</span>, <span class="string">"params"</span>, <span class="string">"body"</span>, <span class="string">"returnType"</span>, <span class="string">"typeParameters"</span>]</span><br><span class="line">  <span class="comment">//....  </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>这样的话才知道入参，如果有清晰的文档，请大家不吝赐教。下面就简单了。</p>
-<h3 id="后来又专门找了一下，终于找到对应文档了传送门"><a href="#后来又专门找了一下，终于找到对应文档了传送门" class="headerlink" title="后来又专门找了一下，终于找到对应文档了传送门"></a>后来又专门找了一下，终于找到对应文档了<a href="https://babeljs.io/docs/core-packages/babel-types/" target="_blank" rel="noopener">传送门</a></h3><h3 id="完善Visitor"><a href="#完善Visitor" class="headerlink" title="完善Visitor"></a>完善Visitor</h3><pre><code class="js"><span class="keyword">const</span> Visitor = {
-    <span class="comment">//this表达式</span>
-    ThisExpression(path){
-        <span class="comment">//构建var _this = this</span>
-        <span class="keyword">let</span> node = t.VariableDeclaration(
-            <span class="string">'var'</span>,
-            [
-                t.VariableDeclarator(
-                    t.Identifier(<span class="string">'_this'</span>),
-                    t.Identifier(<span class="string">'this'</span>)
-                )
-            ]
-        ),
-        <span class="comment">//构建 _this标识符</span>
-        str = t.Identifier(<span class="string">'_this'</span>),
-        <span class="comment">//查找变量声明的父节点</span>
-        <span class="comment">//这里只是针对例子的，真正转换需要考虑的情况很多</span>
-        parentPath = path.findParent(<span class="function">(<span class="params">path</span>) =&gt;</span> path.isVariableDeclaration())
-        <span class="comment">//满足条件</span>
-        <span class="keyword">if</span>(parentPath){
-            <span class="comment">//插入</span>
-            parentPath.insertBefore(node)
-            path.replaceWith(
-                str
-            )
-        }<span class="keyword">else</span>{
-            <span class="keyword">return</span>
-        }
-    },
-    <span class="comment">//处理箭头函数。</span>
-    ArrowFunctionExpression(path){
-        <span class="keyword">var</span> node = path.node
-        <span class="comment">//构造一个t.FunctionExpression节点，将原有path替换掉即可</span>
-        path.replaceWith(t.FunctionExpression(
-            node.id,
-            node.params,
-            node.body
-          ))
-    }
-}     
-</code></pre>
-<p>主体visitor至此算结束了，当然如果是插件的话   </p>
-<pre><code class="js"><span class="comment">//babel调用插件时会将babel-types作为参数传入 </span>
-<span class="keyword">export</span> <span class="keyword">default</span> <span class="function"><span class="keyword">function</span>(<span class="params">{ types: t }</span>) </span>{
-  <span class="keyword">return</span> {
-    visitor:Visitor
-  }
-</code></pre>
-<p>在本地调试的话，可以分别引入babel-core和babel-types  </p>
-<pre><code class="js"><span class="keyword">var</span> babel = <span class="built_in">require</span>(<span class="string">'babel-core'</span>);
-<span class="keyword">var</span> t = <span class="built_in">require</span>(<span class="string">'babel-types'</span>);
-<span class="keyword">var</span> code = <span class="string">`var func = ()=&gt;{</span>
-<span class="string">    console.log(this.b)</span>
-<span class="string">  };`</span>
-<span class="keyword">const</span> result = babel.transform(code, {
-    plugins: [{
-      <span class="comment">//前面的Visitor</span>
-        visitor: Visitor
-    }]
-});  
-<span class="comment">//输出转换之后的code</span>
-<span class="comment">/**</span>
-<span class="comment"> * var _this = this;</span>
-<span class="comment"> * var func = function () {</span>
-<span class="comment"> * console.log(_this.b);</span>
-<span class="comment"> * }; </span>
-<span class="comment"> */</span>
-<span class="built_in">console</span>.log(result.code);  
-</code></pre>
+<h3 id="后来又专门找了一下，终于找到对应文档了传送门"><a href="#后来又专门找了一下，终于找到对应文档了传送门" class="headerlink" title="后来又专门找了一下，终于找到对应文档了传送门"></a>后来又专门找了一下，终于找到对应文档了<a href="https://babeljs.io/docs/core-packages/babel-types/" target="_blank" rel="noopener">传送门</a></h3><h3 id="完善Visitor"><a href="#完善Visitor" class="headerlink" title="完善Visitor"></a>完善Visitor</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> Visitor = &#123;</span><br><span class="line">    <span class="comment">//this表达式</span></span><br><span class="line">    ThisExpression(path)&#123;</span><br><span class="line">        <span class="comment">//构建var _this = this</span></span><br><span class="line">        <span class="keyword">let</span> node = t.VariableDeclaration(</span><br><span class="line">            <span class="string">'var'</span>,</span><br><span class="line">            [</span><br><span class="line">                t.VariableDeclarator(</span><br><span class="line">                    t.Identifier(<span class="string">'_this'</span>),</span><br><span class="line">                    t.Identifier(<span class="string">'this'</span>)</span><br><span class="line">                )</span><br><span class="line">            ]</span><br><span class="line">        ),</span><br><span class="line">        <span class="comment">//构建 _this标识符</span></span><br><span class="line">        str = t.Identifier(<span class="string">'_this'</span>),</span><br><span class="line">        <span class="comment">//查找变量声明的父节点</span></span><br><span class="line">        <span class="comment">//这里只是针对例子的，真正转换需要考虑的情况很多</span></span><br><span class="line">        parentPath = path.findParent(<span class="function">(<span class="params">path</span>) =&gt;</span> path.isVariableDeclaration())</span><br><span class="line">        <span class="comment">//满足条件</span></span><br><span class="line">        <span class="keyword">if</span>(parentPath)&#123;</span><br><span class="line">            <span class="comment">//插入</span></span><br><span class="line">            parentPath.insertBefore(node)</span><br><span class="line">            path.replaceWith(</span><br><span class="line">                str</span><br><span class="line">            )</span><br><span class="line">        &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="comment">//处理箭头函数。</span></span><br><span class="line">    ArrowFunctionExpression(path)&#123;</span><br><span class="line">        <span class="keyword">var</span> node = path.node</span><br><span class="line">        <span class="comment">//构造一个t.FunctionExpression节点，将原有path替换掉即可</span></span><br><span class="line">        path.replaceWith(t.FunctionExpression(</span><br><span class="line">            node.id,</span><br><span class="line">            node.params,</span><br><span class="line">            node.body</span><br><span class="line">          ))</span><br><span class="line">    &#125;</span><br><span class="line">&#125;     </span><br><span class="line"><span class="string">``</span><span class="string">`    </span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">主体visitor至此算结束了，当然如果是插件的话   </span></span><br><span class="line"><span class="string"> </span></span><br><span class="line"><span class="string">`</span><span class="string">``</span>js   </span><br><span class="line"><span class="comment">//babel调用插件时会将babel-types作为参数传入 </span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="function"><span class="keyword">function</span>(<span class="params">&#123; types: t &#125;</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    visitor:Visitor</span><br><span class="line">  &#125;</span><br><span class="line"><span class="string">``</span><span class="string">`  </span></span><br><span class="line"><span class="string">在本地调试的话，可以分别引入babel-core和babel-types  </span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">`</span><span class="string">``</span>js</span><br><span class="line"><span class="keyword">var</span> babel = <span class="built_in">require</span>(<span class="string">'babel-core'</span>);</span><br><span class="line"><span class="keyword">var</span> t = <span class="built_in">require</span>(<span class="string">'babel-types'</span>);</span><br><span class="line"><span class="keyword">var</span> code = <span class="string">`var func = ()=&gt;&#123;</span></span><br><span class="line"><span class="string">    console.log(this.b)</span></span><br><span class="line"><span class="string">  &#125;;`</span></span><br><span class="line"><span class="keyword">const</span> result = babel.transform(code, &#123;</span><br><span class="line">	plugins: [&#123;</span><br><span class="line">	  <span class="comment">//前面的Visitor</span></span><br><span class="line">		visitor: Visitor</span><br><span class="line">	&#125;]</span><br><span class="line">&#125;);  </span><br><span class="line"><span class="comment">//输出转换之后的code</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * var _this = this;</span></span><br><span class="line"><span class="comment"> * var func = function () &#123;</span></span><br><span class="line"><span class="comment"> * console.log(_this.b);</span></span><br><span class="line"><span class="comment"> * &#125;; </span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="built_in">console</span>.log(result.code);  </span><br><span class="line"><span class="string">``</span><span class="string">`     </span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">### 更新说明</span></span><br><span class="line"><span class="string">对于构造新的语法内容时，除了上面使用t.VariableDeclaration这种费劲的表达式之外可以借助babel-template实现。</span></span><br><span class="line"><span class="string">用法参考</span></span><br><span class="line"><span class="string">`</span><span class="string">``</span>js</span><br><span class="line"><span class="keyword">const</span> buildRequire = template(<span class="string">`</span></span><br><span class="line"><span class="string">  var IMPORT_NAME = require(SOURCE);</span></span><br><span class="line"><span class="string">`</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> ast = buildRequire(&#123;</span><br><span class="line">  IMPORT_NAME: t.identifier(<span class="string">"myModule"</span>),</span><br><span class="line">  SOURCE: t.stringLiteral(<span class="string">"my-module"</span>),</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>新版本可 使用replaceWithSourceString</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">FunctionDeclaration(path) &#123;</span><br><span class="line">  path.replaceWithSourceString(<span class="string">`function add(a, b) &#123;</span></span><br><span class="line"><span class="string">    return a + b;</span></span><br><span class="line"><span class="string">  &#125;`</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <h2 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h2><h3 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h3><p><a href="https://github.com/jamiebuilds/babel-handbook/blob/master/translations/zh-Hans/plugin-handbook.md#toc-replacing-a-node" target="_blank" rel="noopener">Babel 插件手册</a><br><a href="https://www.h5jun.com/post/babel-for-es6-and-beyond.html" target="_blank" rel="noopener">Babel for ES6? And Beyond!</a>   </p>
 <p>纸上得来终觉浅，原本也认为已经理解了babel的原理和插件机制，没想到连写个小demo都这么费劲。主要还是对相关api不熟悉，不知道如何去构建节点，熟练之后应该会好很多。此文是插件手册的一个简单总结，把自己实现的思路汇总了一下。抛砖引玉，共同进步，另外希望对有需要的同学略有帮助。<a href="https://github.com/xiaoxiangdaiyu/blog" target="_blank" rel="noopener">原文详见</a></p>
 
@@ -528,7 +462,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">30</span>
+                  <span class="site-state-item-count">31</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
