@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="前端 工程结构," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="前言随着功能和业务量级的飙升，前端代码量级也越来越大，再加上后续管理运维，代码仓库的运营管理挑战也浮出水面。主流方案有两种：一是multirepo式的分散式的独立仓库，二是monorepo式的集中管理，各有千秋，下面就结合实际场景一起深入了解下。">
+<meta name="keywords" content="前端 工程结构">
+<meta property="og:type" content="article">
+<meta property="og:title" content="由monorepo说开去">
+<meta property="og:url" content="http://xxdy.tech/2019/12/30/gitcheckout/index.html">
+<meta property="og:site_name" content="雨打梨梦三村边">
+<meta property="og:description" content="前言随着功能和业务量级的飙升，前端代码量级也越来越大，再加上后续管理运维，代码仓库的运营管理挑战也浮出水面。主流方案有两种：一是multirepo式的分散式的独立仓库，二是monorepo式的集中管理，各有千秋，下面就结合实际场景一起深入了解下。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://xxdy.tech/img/mono.gif">
+<meta property="og:updated_time" content="2019-12-31T03:48:50.622Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="由monorepo说开去">
+<meta name="twitter:description" content="前言随着功能和业务量级的飙升，前端代码量级也越来越大，再加上后续管理运维，代码仓库的运营管理挑战也浮出水面。主流方案有两种：一是multirepo式的分散式的独立仓库，二是monorepo式的集中管理，各有千秋，下面就结合实际场景一起深入了解下。">
+<meta name="twitter:image" content="http://xxdy.tech/img/mono.gif">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://xxdy.tech/2019/12/30/gitcheckout/"/>
+
+
+
+
+
+  <title>由monorepo说开去 | 雨打梨梦三村边</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">雨打梨梦三村边</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">潇湘待雨</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://xxdy.tech/2019/12/30/gitcheckout/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="felix.pan">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="雨打梨梦三村边">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">由monorepo说开去</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-12-30T08:00:29+08:00">
+                2019-12-30
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>随着功能和业务量级的飙升，前端代码量级也越来越大，再加上后续管理运维，代码仓库的运营管理挑战也浮出水面。主流方案有两种：一是multirepo式的分散式的独立仓库，二是monorepo式的集中管理，各有千秋，下面就结合实际场景一起深入了解下。<br><a id="more"></a></p>
+<h2 id="分散式管理-multirepo"><a href="#分散式管理-multirepo" class="headerlink" title="分散式管理-multirepo"></a>分散式管理-multirepo</h2><p>即按照功能或者其他维度，将项目拆分为不同模块单独维护于各自仓库中。</p>
+<h3 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h3><p>对于敏捷迭代快速开发的新需求，常规做法就是每个模块对应一个仓库，新的需求进行归类，可归入已有仓库则进行迭代，不满足则新建仓库。</p>
+<h3 id="优势"><a href="#优势" class="headerlink" title="优势"></a>优势</h3><h4 id="1-灵活"><a href="#1-灵活" class="headerlink" title="1.灵活"></a>1.灵活</h4><p>不同模块独立维护，与其他模块天然隔离。各个模块可以选择适合自己的风格、工具等。</p>
+<h4 id="2-安全"><a href="#2-安全" class="headerlink" title="2.安全"></a>2.安全</h4><p>得益于模块的拆分，权限控制较为自然。<br>开发时只关注相关部分，不会误操作其他内容。<br>发布上线，对其他模块无感知。</p>
+<h3 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h3><p>作为传统的管理组织方式，发展演进这么久，必然会存在一些限制。突出体现在协作和管理成本上。  </p>
+<h4 id="1-管理成本"><a href="#1-管理成本" class="headerlink" title="1. 管理成本"></a>1. 管理成本</h4><p>常见的项目交接时，每个人都负责了一堆项目、账号等，只能手动梳理，还存在漏掉的可能。我当初经历过几次大的调整，交接的真是一脸懵逼和心痛。来个需求才发现还有个仓库一直处于遗忘的角落。</p>
+<h4 id="2-协作成本"><a href="#2-协作成本" class="headerlink" title="2. 协作成本"></a>2. 协作成本</h4><p>涉及多个项目开发时，本地开发需要打开多个IDE在其中切换。<br>对于本地调试等也是个繁琐的过程，虽然存在npm link等方式。</p>
+<h4 id="3-依赖升级"><a href="#3-依赖升级" class="headerlink" title="3. 依赖升级"></a>3. 依赖升级</h4><p>这种场景一般出现在依赖的核心模块上，特别是自行开发的基础依赖，不得不升级时简直一言难尽，数目直逼上百的项目，每个都要修改发布一次。</p>
+<p>上面说的是业务模块，对于开源或者公司内部基础性工具，升级这里的问题更显著一些。对于程序员俩说，出现问题解决问题就是，因此集中式的管理模式就出现了。</p>
+<h2 id="集中式管理monorepo"><a href="#集中式管理monorepo" class="headerlink" title="集中式管理monorepo"></a>集中式管理monorepo</h2><p>monorepo 的核心观点是所有的项目在一个代码仓库中。严格的统一和收归，以利于统一的升级和管理。<br>不过这并不是说代码没有组织的随意存放。相反，在文件目录上体现出管理结构的要求更高，否则可维护性更低。<br>例如Babel，每个模块都在指定的packages目录下。</p>
+<h3 id="优势-1"><a href="#优势-1" class="headerlink" title="优势"></a>优势</h3><p>既然是基于问题的演进，其实优势比较明显，就是multirepo的局限的解决。<br>例如协作、运营管理等成本降低。<br>不过monorepo也不全是益处，相反其局限也比较明显。</p>
+<h3 id="问题-1"><a href="#问题-1" class="headerlink" title="问题"></a>问题</h3><h4 id="1-项目体积增加"><a href="#1-项目体积增加" class="headerlink" title="1. 项目体积增加"></a>1. 项目体积增加</h4><p>随着项目的发展，体积会逐渐增大，甚至成为巨无霸项目体积几个G。<br>自然带来一些问题：</p>
+<ul>
+<li><p>拉取时间边长<br>拿babel举个例子，虽然只有130M，但时间已经增加不少，更遑论上G的存在。!<br><img src="/img/mono.gif"></p>
+</li>
+<li><p>编译时间很慢<br>很自然，如果每次还是全部编译的话，开发、部署时的等待时间会相当的长</p>
+</li>
+</ul>
+<h4 id="2-安全性"><a href="#2-安全性" class="headerlink" title="2. 安全性"></a>2. 安全性</h4><p>全部功能就这样暴露在所有开发者面前，安全性是个大问题。<br>误操作的可能性，如果仅仅寄希望于开发者素质和codereview时的人工复检是不可靠的。</p>
+<h3 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h3><p>当然对于比较成熟的模式，解决方案也是形成了沉淀的。</p>
+<h4 id="1-多模块管理工具"><a href="#1-多模块管理工具" class="headerlink" title="1. 多模块管理工具"></a>1. 多模块管理工具</h4><p>针对复杂的项目模块，自然需要有贴合实际的管理工具。<br>例如<a href="https://github.com/lerna/lerna" target="_blank" rel="noopener">lerna</a>，自我定位就是:<br>A tool for managing JavaScript projects with multiple packages<br>至于详细用法，大家可以通过官网查看。</p>
+<h4 id="2-git稀疏检出"><a href="#2-git稀疏检出" class="headerlink" title="2. git稀疏检出"></a>2. git稀疏检出</h4><p>针对开发者只关注相应内容的解决方案可以依托git来实现的。<br>Git在1.7版本后，已经支持只Checkout部分内容，即稀疏检出(sparse checkout)</p>
+<p>稀疏检出就是本地版本库检出时不检出全部，只将指定的文件从本地版本库检出到工作区，而其他未指定的文件则不予检出（即使这些文件存在于工作区，其修改也会被忽略）。 </p>
+<p>也就是我们可以在工作区只关注相关的模块，虽然文件全部pull了下来，但展示和管理式会忽略其他文件，即使展示了其他文件并进行了修改，修改依然会被忽略。<br>例如babel中我们只展示 babel-cli 内容部分，操作如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">// 创建文件夹</span><br><span class="line">mkdir demo &amp;&amp; <span class="built_in">cd</span> demo</span><br><span class="line">// 初始化git </span><br><span class="line">git init</span><br><span class="line">git remote add origin https://github.com/babel/babel.git</span><br><span class="line">// 打开 开关 </span><br><span class="line">git config core.sparsecheckout <span class="literal">true</span></span><br><span class="line">// 指定目录</span><br><span class="line"><span class="built_in">echo</span> <span class="string">"packages/babel-cli/"</span> &gt;&gt; .git/info/sparse-checkout</span><br><span class="line">// 获取代码</span><br><span class="line">git pull origin master</span><br><span class="line">```  </span><br><span class="line">这样，我们ls可以查看到文件内容只有：</span><br><span class="line"></span><br><span class="line">```bash</span><br><span class="line">packages/babel-cli</span><br></pre></td></tr></table></figure>
+<p>如果需要修改展示目录，直接修改.git/info/sparse-checkout，即可，然后重新进行checkout </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> <span class="string">"packages/babel-cli/"</span> &gt;&gt; .git/info/sparse-checkout</span><br><span class="line">git checkout master</span><br></pre></td></tr></table></figure>
+<p>这样增加了安全性。</p>
+<h4 id="扩展-浅克隆"><a href="#扩展-浅克隆" class="headerlink" title="扩展-浅克隆"></a>扩展-浅克隆</h4><p>稀疏检出只是展示上的部分，本身仍然包含所有的文件和历史。如果只关注最近的提交，可以通过浅克隆实现。<br>使用：<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone --depth <span class="number">2</span> https:<span class="comment">//github.com/babel/babel.git</span></span><br></pre></td></tr></table></figure></p>
+<p>不过浅克隆限制较多，一般用于对远程版本库的查看和研究。</p>
+<ul>
+<li>不能从浅克隆版本库克隆出新的版本库。</li>
+<li>其他版本库不能从浅克隆获取提交。</li>
+<li>其他版本库不能推送提交到浅克隆版本库。</li>
+<li>不要从浅克隆版本库推送提交至其他版本库，除非确认推送的目标版本库包含浅克隆版本库中缺失的全部历史提交，否则会造成目标版本库包含不完整的提交历史导致版本库无法操作。</li>
+<li>在浅克隆版本库中执行合并操作时，如果所合并的提交出现在浅克隆历史中，则可以顺利合并，否则会出现大量的冲突，就好像和无关的历史进行合并一样。</li>
+</ul>
+<h2 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h2><p>本文简单介绍了不同的仓库管理模式理念和一些实践方式，个人理解有限，抛砖引玉，欢迎一起讨论。更多内容请转<a href="http://xxdy.tech/">雨打梨梦三村边</a>，同时感谢以下参考文章。。</p>
+<h3 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h3><ul>
+<li><a href="https://www.kloia.com/blog/monorepo-or-multirepo" target="_blank" rel="noopener">https://www.kloia.com/blog/monorepo-or-multirepo</a></li>
+<li><a href="https://www.worldhello.net/gotgit/08-git-misc/090-sparse-checkout-and-shallow-clone.html" target="_blank" rel="noopener">https://www.worldhello.net/gotgit/08-git-misc/090-sparse-checkout-and-shallow-clone.html</a>  </li>
+<li><a href="https://zhuanlan.zhihu.com/p/31289463" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/31289463</a></li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/前端-工程结构/" rel="tag"># 前端 工程结构</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/12/23/debug/" rel="next" title="由前端调试说来去">
+                <i class="fa fa-chevron-left"></i> 由前端调试说来去
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">felix.pan</p>
+              <p class="site-description motion-element" itemprop="description">潇湘待雨个人博客</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">34</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text"><a href="#&#x524D;&#x8A00;" class="headerlink" title="&#x524D;&#x8A00;"></a>&#x524D;&#x8A00;</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#分散式管理-multirepo"><span class="nav-number">2.</span> <span class="nav-text"><a href="#&#x5206;&#x6563;&#x5F0F;&#x7BA1;&#x7406;-multirepo" class="headerlink" title="&#x5206;&#x6563;&#x5F0F;&#x7BA1;&#x7406;-multirepo"></a>&#x5206;&#x6563;&#x5F0F;&#x7BA1;&#x7406;-multirepo</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#使用场景"><span class="nav-number">2.1.</span> <span class="nav-text"><a href="#&#x4F7F;&#x7528;&#x573A;&#x666F;" class="headerlink" title="&#x4F7F;&#x7528;&#x573A;&#x666F;"></a>&#x4F7F;&#x7528;&#x573A;&#x666F;</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#优势"><span class="nav-number">2.2.</span> <span class="nav-text"><a href="#&#x4F18;&#x52BF;" class="headerlink" title="&#x4F18;&#x52BF;"></a>&#x4F18;&#x52BF;</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-灵活"><span class="nav-number">2.2.1.</span> <span class="nav-text"><a href="#1-&#x7075;&#x6D3B;" class="headerlink" title="1.&#x7075;&#x6D3B;"></a>1.&#x7075;&#x6D3B;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-安全"><span class="nav-number">2.2.2.</span> <span class="nav-text"><a href="#2-&#x5B89;&#x5168;" class="headerlink" title="2.&#x5B89;&#x5168;"></a>2.&#x5B89;&#x5168;</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#问题"><span class="nav-number">2.3.</span> <span class="nav-text"><a href="#&#x95EE;&#x9898;" class="headerlink" title="&#x95EE;&#x9898;"></a>&#x95EE;&#x9898;</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-管理成本"><span class="nav-number">2.3.1.</span> <span class="nav-text"><a href="#1-&#x7BA1;&#x7406;&#x6210;&#x672C;" class="headerlink" title="1. &#x7BA1;&#x7406;&#x6210;&#x672C;"></a>1. &#x7BA1;&#x7406;&#x6210;&#x672C;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-协作成本"><span class="nav-number">2.3.2.</span> <span class="nav-text"><a href="#2-&#x534F;&#x4F5C;&#x6210;&#x672C;" class="headerlink" title="2. &#x534F;&#x4F5C;&#x6210;&#x672C;"></a>2. &#x534F;&#x4F5C;&#x6210;&#x672C;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-依赖升级"><span class="nav-number">2.3.3.</span> <span class="nav-text"><a href="#3-&#x4F9D;&#x8D56;&#x5347;&#x7EA7;" class="headerlink" title="3. &#x4F9D;&#x8D56;&#x5347;&#x7EA7;"></a>3. &#x4F9D;&#x8D56;&#x5347;&#x7EA7;</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#集中式管理monorepo"><span class="nav-number">3.</span> <span class="nav-text"><a href="#&#x96C6;&#x4E2D;&#x5F0F;&#x7BA1;&#x7406;monorepo" class="headerlink" title="&#x96C6;&#x4E2D;&#x5F0F;&#x7BA1;&#x7406;monorepo"></a>&#x96C6;&#x4E2D;&#x5F0F;&#x7BA1;&#x7406;monorepo</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#优势-1"><span class="nav-number">3.1.</span> <span class="nav-text"><a href="#&#x4F18;&#x52BF;-1" class="headerlink" title="&#x4F18;&#x52BF;"></a>&#x4F18;&#x52BF;</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#问题-1"><span class="nav-number">3.2.</span> <span class="nav-text"><a href="#&#x95EE;&#x9898;-1" class="headerlink" title="&#x95EE;&#x9898;"></a>&#x95EE;&#x9898;</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-项目体积增加"><span class="nav-number">3.2.1.</span> <span class="nav-text"><a href="#1-&#x9879;&#x76EE;&#x4F53;&#x79EF;&#x589E;&#x52A0;" class="headerlink" title="1. &#x9879;&#x76EE;&#x4F53;&#x79EF;&#x589E;&#x52A0;"></a>1. &#x9879;&#x76EE;&#x4F53;&#x79EF;&#x589E;&#x52A0;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-安全性"><span class="nav-number">3.2.2.</span> <span class="nav-text"><a href="#2-&#x5B89;&#x5168;&#x6027;" class="headerlink" title="2. &#x5B89;&#x5168;&#x6027;"></a>2. &#x5B89;&#x5168;&#x6027;</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#解决方案"><span class="nav-number">3.3.</span> <span class="nav-text"><a href="#&#x89E3;&#x51B3;&#x65B9;&#x6848;" class="headerlink" title="&#x89E3;&#x51B3;&#x65B9;&#x6848;"></a>&#x89E3;&#x51B3;&#x65B9;&#x6848;</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-多模块管理工具"><span class="nav-number">3.3.1.</span> <span class="nav-text"><a href="#1-&#x591A;&#x6A21;&#x5757;&#x7BA1;&#x7406;&#x5DE5;&#x5177;" class="headerlink" title="1. &#x591A;&#x6A21;&#x5757;&#x7BA1;&#x7406;&#x5DE5;&#x5177;"></a>1. &#x591A;&#x6A21;&#x5757;&#x7BA1;&#x7406;&#x5DE5;&#x5177;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-git稀疏检出"><span class="nav-number">3.3.2.</span> <span class="nav-text"><a href="#2-git&#x7A00;&#x758F;&#x68C0;&#x51FA;" class="headerlink" title="2. git&#x7A00;&#x758F;&#x68C0;&#x51FA;"></a>2. git&#x7A00;&#x758F;&#x68C0;&#x51FA;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#扩展-浅克隆"><span class="nav-number">3.3.3.</span> <span class="nav-text"><a href="#&#x6269;&#x5C55;-&#x6D45;&#x514B;&#x9686;" class="headerlink" title="&#x6269;&#x5C55;-&#x6D45;&#x514B;&#x9686;"></a>&#x6269;&#x5C55;-&#x6D45;&#x514B;&#x9686;</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#结束语"><span class="nav-number">4.</span> <span class="nav-text"><a href="#&#x7ED3;&#x675F;&#x8BED;" class="headerlink" title="&#x7ED3;&#x675F;&#x8BED;"></a>&#x7ED3;&#x675F;&#x8BED;</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#参考文章"><span class="nav-number">4.1.</span> <span class="nav-text"><a href="#&#x53C2;&#x8003;&#x6587;&#x7AE0;" class="headerlink" title="&#x53C2;&#x8003;&#x6587;&#x7AE0;"></a>&#x53C2;&#x8003;&#x6587;&#x7AE0;</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">felix.pan</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
