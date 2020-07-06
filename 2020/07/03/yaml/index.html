@@ -86,15 +86,14 @@
 <meta property="og:site_name" content="雨打梨梦三村边">
 <meta property="og:description" content="YAML &amp;amp; JSON &amp;amp;XML 孰强孰弱前言本文翻译https://www.csestack.org/yaml-vs-json-vs-xml-difference/,下文会针对当前现有的数据序列化语言做下梳理。重点突出YAML是什么，优缺点，和YML/JSON对比，以便于大家依据自己场景选择合适的语言。">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="https://user-gold-cdn.xitu.io/2020/7/6/1732337bf9dfd2b7?w=1012&h=614&f=jpeg&s=68328">
-<meta property="og:image" content="https://user-gold-cdn.xitu.io/2020/7/6/1732337bf9dfd2b7?w=1012&h=614&f=jpeg&s=68328">
-<meta property="og:image" content="https://user-gold-cdn.xitu.io/2020/7/6/1732339c26374545?w=1028&h=720&f=jpeg&s=85837">
-<meta property="og:image" content="https://user-gold-cdn.xitu.io/2020/7/6/17323386fbf6b02f?w=1062&h=594&f=jpeg&s=119899">
-<meta property="og:updated_time" content="2020-07-06T08:27:33.589Z">
+<meta property="og:image" content="https://p0.meituan.net/dprainbow/538a4132067ca049bdaadbce9776fc9b68328.jpg">
+<meta property="og:image" content="https://p0.meituan.net/dprainbow/a8ad2577e5fe559a77a11e59af0a37cc85837.jpg">
+<meta property="og:image" content="https://p0.meituan.net/dprainbow/4a1f2b10703f364f481d5cf6911bd9df119899.jpg">
+<meta property="og:updated_time" content="2020-07-06T08:45:05.037Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="YAMLvsJSONvsXML">
 <meta name="twitter:description" content="YAML &amp;amp; JSON &amp;amp;XML 孰强孰弱前言本文翻译https://www.csestack.org/yaml-vs-json-vs-xml-difference/,下文会针对当前现有的数据序列化语言做下梳理。重点突出YAML是什么，优缺点，和YML/JSON对比，以便于大家依据自己场景选择合适的语言。">
-<meta name="twitter:image" content="https://user-gold-cdn.xitu.io/2020/7/6/1732337bf9dfd2b7?w=1012&h=614&f=jpeg&s=68328">
+<meta name="twitter:image" content="https://p0.meituan.net/dprainbow/538a4132067ca049bdaadbce9776fc9b68328.jpg">
 
 
 
@@ -305,7 +304,7 @@
 
       
         <h1 id="YAML-amp-JSON-amp-XML-孰强孰弱"><a href="#YAML-amp-JSON-amp-XML-孰强孰弱" class="headerlink" title="YAML &amp; JSON &amp;XML 孰强孰弱"></a>YAML &amp; JSON &amp;XML 孰强孰弱</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本文翻译<a href="https://www.csestack.org/yaml-vs-json-vs-xml-difference/" target="_blank" rel="noopener">https://www.csestack.org/yaml-vs-json-vs-xml-difference/</a>,下文会针对当前现有的数据序列化语言做下梳理。重点突出YAML是什么，优缺点，和YML/JSON对比，以便于大家依据自己场景选择合适的语言。<br><a id="more"></a></p>
-<h2 id="YAMML-简介"><a href="#YAMML-简介" class="headerlink" title="YAMML 简介"></a>YAMML 简介</h2><p>YAML和JSON、XML一样是数据序列化语言，使用缩进来描述格式化数据。<br>下面的例子可以看到其如何工作的：<br><img src="https://user-gold-cdn.xitu.io/2020/7/6/1732337bf9dfd2b7?w=1012&h=614&f=jpeg&s=68328"></p>
+<h2 id="YAMML-简介"><a href="#YAMML-简介" class="headerlink" title="YAMML 简介"></a>YAMML 简介</h2><p>YAML和JSON、XML一样是数据序列化语言，使用缩进来描述格式化数据。<br>下面的例子可以看到其如何工作的：<br><img src="https://p0.meituan.net/dprainbow/538a4132067ca049bdaadbce9776fc9b68328.jpg"></p>
 <p>就像Python一样有个缩进约束，假如有过python开发体验的话，就会很明显的发现其使用缩进的数量来定义不同的区块。正如前面提到，有很多如JSON、XML这样被广泛使用的序列化语言。</p>
 <h3 id="YAML使用场景"><a href="#YAML使用场景" class="headerlink" title="YAML使用场景"></a>YAML使用场景</h3><p>对于序列化语言来说，使用场景如下：</p>
 <ul>
@@ -335,9 +334,9 @@
 <li>三者文件的扩展名都与其名称对应， .yaml for YAML, .json for JSON, .xml for XML，比较容易记忆。</li>
 <li>实际上，三者的扩展名都是比较随意的，对开发者和应用来说重要的是其文件格式，内容类型和数据结构。(译者按，重要的是内容，例如.yml和.yaml几乎无差别。.js的文件中依然可以存储json).</li>
 </ul>
-<h2 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h2><h3 id="yaml"><a href="#yaml" class="headerlink" title="yaml"></a>yaml</h3><p>YAML的例子中，比较个性的就是每个数据块都有相对应的空白格。<br>这里就直接照搬原文示例了：<br><img src="https://user-gold-cdn.xitu.io/2020/7/6/1732337bf9dfd2b7?w=1012&h=614&f=jpeg&s=68328"></p>
-<h3 id="json"><a href="#json" class="headerlink" title="json"></a>json</h3><p><img src="https://user-gold-cdn.xitu.io/2020/7/6/1732339c26374545?w=1028&h=720&f=jpeg&s=85837"></p>
-<h3 id="xml"><a href="#xml" class="headerlink" title="xml"></a>xml</h3><p><img src="https://user-gold-cdn.xitu.io/2020/7/6/17323386fbf6b02f?w=1062&h=594&f=jpeg&s=119899"></p>
+<h2 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h2><h3 id="yaml"><a href="#yaml" class="headerlink" title="yaml"></a>yaml</h3><p>YAML的例子中，比较个性的就是每个数据块都有相对应的空白格。<br>这里就直接照搬原文示例了：<br>&lt;img src=”<a href="https://p0.meituan.net/dprainbow/538a4132067ca049bdaadbce9776fc9b68328.jpg&gt;" target="_blank" rel="noopener">https://p0.meituan.net/dprainbow/538a4132067ca049bdaadbce9776fc9b68328.jpg&gt;</a></p>
+<h3 id="json"><a href="#json" class="headerlink" title="json"></a>json</h3><p><img src="https://p0.meituan.net/dprainbow/a8ad2577e5fe559a77a11e59af0a37cc85837.jpg"></p>
+<h3 id="xml"><a href="#xml" class="headerlink" title="xml"></a>xml</h3><p><img src="https://p0.meituan.net/dprainbow/4a1f2b10703f364f481d5cf6911bd9df119899.jpg"></p>
 <h2 id="三者在应用中的不同表现"><a href="#三者在应用中的不同表现" class="headerlink" title="三者在应用中的不同表现"></a>三者在应用中的不同表现</h2><p>现在时候，大家发现三者的不同取决于在何种应用中使用。</p>
 <ul>
 <li>当提到javascript的时候，JSON是最适合的序列化语言</li>
