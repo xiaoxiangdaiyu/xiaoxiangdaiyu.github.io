@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="前言作为前端模块化扎展现形式的npm包，已经在前端开发中不可或缺，熟练掌握npm相关内容，也是前端开发者的一门必修课，那么除了npm publish这类常见内容之外，还有哪些内容需要我们关注呢，下面就一起深入看看。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="npm进阶命令知多少(一)">
+<meta property="og:url" content="http://xxdy.tech/2020/09/06/npm1/index.html">
+<meta property="og:site_name" content="雨打梨梦三村边">
+<meta property="og:description" content="前言作为前端模块化扎展现形式的npm包，已经在前端开发中不可或缺，熟练掌握npm相关内容，也是前端开发者的一门必修课，那么除了npm publish这类常见内容之外，还有哪些内容需要我们关注呢，下面就一起深入看看。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2020-09-08T12:16:13.124Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="npm进阶命令知多少(一)">
+<meta name="twitter:description" content="前言作为前端模块化扎展现形式的npm包，已经在前端开发中不可或缺，熟练掌握npm相关内容，也是前端开发者的一门必修课，那么除了npm publish这类常见内容之外，还有哪些内容需要我们关注呢，下面就一起深入看看。">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://xxdy.tech/2020/09/06/npm1/"/>
+
+
+
+
+
+  <title>npm进阶命令知多少(一) | 雨打梨梦三村边</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">雨打梨梦三村边</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">潇湘待雨</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://xxdy.tech/2020/09/06/npm1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="felix.pan">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="雨打梨梦三村边">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">npm进阶命令知多少(一)</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-09-06T00:00:00+08:00">
+                2020-09-06
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>作为前端模块化扎展现形式的npm包，已经在前端开发中不可或缺，熟练掌握npm相关内容，也是前端开发者的一门必修课，那么除了npm publish这类常见内容之外，还有哪些内容需要我们关注呢，下面就一起深入看看。<br><a id="more"></a></p>
+<h2 id="npm-publish-发布npm包"><a href="#npm-publish-发布npm包" class="headerlink" title="npm publish 发布npm包"></a>npm publish 发布npm包</h2><p>该命令简单粗暴，执行之后，就会将相关文件上传到远端，并为对应包新增一个对应版本号。那么这里的<strong>相关文件</strong>和<strong>对应版本</strong>具体是哪些呢，不知道大家有没有关注过。</p>
+<h3 id="发布哪些文件"><a href="#发布哪些文件" class="headerlink" title="发布哪些文件"></a>发布哪些文件</h3><p>一个指令爽的飞起，包发布完成了，问题是发了什么上去呢，万一有些不能对外暴露的文件被download下去，问题可能就大了。因此npm允许开发者通过配置来指定待发布内容。<br>可以分为以下几种情况来指定:</p>
+<ol>
+<li>当前包目录下，只要.npmignore存在，那么以.npmignore为准，没有被.npmignore忽略的内容都会被上传，即使.gitignore已经忽略该文件。毕竟是专用配置文件，优先级最高。</li>
+<li>不存在.npmignore，但有.gitignore，会以.gitignore为准。这里也说得过去，一般无需通过git进行管理的文件，一般是无关内容，例如.vscode等环境配置相关。<br>例如，<a href="https://github.com/vuejs/vue/blob/dev/.gitignore" target="_blank" rel="noopener">vue就只有</a> .gitignoe   大家可以看下安装的包里面存不存在相关文件。</li>
+<li>没有.gitignore 或者 .npmignore，上所有文件都会上传。</li>
+<li>有一种情况例外，package.json中存在files字段，可以理解为files为白名单，ignore文件为黑名单。<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">files:[<span class="string">"src"</span>,<span class="string">"types"</span>]</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>这里有个问题：当.npmignore和files内容冲突时，那个优先级高呢。<strong>答案是以files为准</strong>,<br>可以通过npm pack 命令进行本地测试：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// .npmignore</span></span><br><span class="line">.DS_Store</span><br><span class="line">node_modules</span><br><span class="line">.gobble*</span><br><span class="line">dist</span><br><span class="line">src</span><br><span class="line"><span class="comment">// package.json</span></span><br><span class="line"><span class="string">"files"</span>: [</span><br><span class="line">    <span class="string">"src"</span>,</span><br><span class="line">    <span class="string">"dist"</span>,</span><br><span class="line">    <span class="string">"README.md"</span></span><br><span class="line">  ]</span><br><span class="line"><span class="comment">// 打包测试</span></span><br><span class="line">npm pack</span><br></pre></td></tr></table></figure>
+<p>项目根目录下会生成一个压缩包这就是将要上传的文件内容，打开后可以发现，src文件夹是存在的。</p>
+<p><strong>举个栗子</strong><br> 再举个比较明显的例子，<a href="https://github.com/vuejs/vue/tree/v2.6.12" target="_blank" rel="noopener">vue@2.6.12</a> 其配置如下：</p>
+ <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"> <span class="comment">//files</span></span><br><span class="line"> <span class="string">"files"</span>: [</span><br><span class="line">    <span class="string">"src"</span>,</span><br><span class="line">    <span class="string">"dist/*.js"</span>,</span><br><span class="line">    <span class="string">"types/*.d.ts"</span></span><br><span class="line">  ]</span><br><span class="line">  <span class="comment">// .gitignore</span></span><br><span class="line">  .DS_Store</span><br><span class="line">node_modules</span><br><span class="line">*.log</span><br><span class="line">explorations</span><br><span class="line">TODOs.md</span><br><span class="line">dist<span class="comment">/*.gz</span></span><br><span class="line"><span class="comment">dist/*.map</span></span><br><span class="line"><span class="comment">dist/vue.common.min.js</span></span><br><span class="line"><span class="comment">test/e2e/reports</span></span><br><span class="line"><span class="comment">test/e2e/screenshots</span></span><br><span class="line"><span class="comment">coverage</span></span><br><span class="line"><span class="comment">RELEASE_NOTE*.md</span></span><br><span class="line"><span class="comment">dist/*.js</span></span><br><span class="line"><span class="comment">packages/vue-server-renderer/basic.js</span></span><br><span class="line"><span class="comment">packages/vue-server-renderer/build.js</span></span><br><span class="line"><span class="comment">packages/vue-server-renderer/server-plugin.js</span></span><br><span class="line"><span class="comment">packages/vue-server-renderer/client-plugin.js</span></span><br><span class="line"><span class="comment">packages/vue-template-compiler/build.js</span></span><br><span class="line"><span class="comment">.vscode</span></span><br></pre></td></tr></table></figure>
+<p>这样的话，vue对外开放的npm包中，只包含有files定义的文件和package.json、README.md这些文档类文件。   </p>
+<p>为什么有额外这些文档类呢，原因在于这些信息传递的文件，npm是规定不允许忽略的，只有存在就会上传：</p>
+<ul>
+<li>package.json</li>
+<li>README (and its variants)</li>
+<li>CHANGELOG (and its variants)</li>
+<li>LICENSE / LICENCE</li>
+</ul>
+<p><strong>ignore语法格式</strong><br>.npmignore语法跟.gitignore相同，上面的例子也体现出了相关语法，这里就不粘贴了。</p>
+<p><strong>至于什么样的文件夹可以被认定为包目录</strong>：<br><a href="https://docs.npmjs.com/using-npm/developers" target="_blank" rel="noopener">这里的定义比较复杂</a></p>
+<p>常见的就是包含有package.json的文件夹，我们记住这个就行了。  </p>
+<p>具体到实际开发中，monorepo那种单仓库多包的形式，每个子包显然也是一个包目录，可以进行独立的npm包管理行为。  </p>
+<p>举个例子：</p>
+<ul>
+<li><a href="https://github.com/vuejs/vue/tree/dev/packages/vue-template-compiler" target="_blank" rel="noopener">vue下的packages的vue-template-compiler</a> ，就是单独发布为一个vue-template-compiler包的。</li>
+<li>根目录发布为vue包，忽略掉了packages下的一些内容<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4>这一小段的核心就是，指定需要上传的文件时有两种方式：</li>
+</ul>
+<ol>
+<li>白名单形式： files字段，优先级最高，该字段以外的文件，除了信息类，其他的都忽略。<br>适用于，文件夹多，需要上传的文件夹少的情况，例如vue这种。</li>
+<li>黑名单形式: .npmignore 或.gitignore， npmignore优先级较高。</li>
+<li>都不指定，包目录下所有内容都上传。</li>
+</ol>
+<h3 id="发布什么版本"><a href="#发布什么版本" class="headerlink" title="发布什么版本"></a>发布什么版本</h3><p>明确了发布的内容之后，发布的版本也是有要求的。通用的就是<a href="https://semver.org/lang/zh-CN/" target="_blank" rel="noopener">遵循语义化版本规范</a>，部分内容摘抄如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">版本格式：主版本号.次版本号.修订号，</span><br><span class="line"></span><br><span class="line">版本号递增规则如下：</span><br><span class="line"></span><br><span class="line">主版本号：当你做了不兼容的 API 修改，</span><br><span class="line"></span><br><span class="line">次版本号：当你做了向下兼容的功能性新增，</span><br><span class="line"></span><br><span class="line">修订号：当你做了向下兼容的问题修正。</span><br><span class="line"></span><br><span class="line">先行版本号及版本编译元数据可以加到“主版本号.次版本号.修订号”的后面，作为延伸。</span><br><span class="line"></span><br><span class="line">先行版本：</span><br><span class="line"></span><br><span class="line">alpha: 内部版本</span><br><span class="line"></span><br><span class="line">beta: 公测版本</span><br><span class="line"></span><br><span class="line">rc: 即Release candiate，正式版本的候选版本</span><br></pre></td></tr></table></figure>
+<p>作为业界公认的规范，只有大家都遵循之后，才能形成整个生态的统一和谐，否则一方升级版本之后，使用者都不敢跟进，那么就不要谈以后的发展了。</p>
+<p><strong>版本哪里来</strong><br>版本通过package.json里面的version字段来确定：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">"version"</span>: <span class="string">"1.0.0"</span>,</span><br></pre></td></tr></table></figure>
+<p>每一版本号是唯一的，假如发布了1.0.0,下次更新必须要进行更新，否则会提醒。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm ERR! [forbidden]cannot modify pre-existing version: <span class="number">1.0</span><span class="number">.1</span></span><br></pre></td></tr></table></figure>
+<p><strong>自动更新</strong><br>有人说，每次都要手动更新版本太麻烦，或者万一改错了就不好了。  是否有命令行可以替我自动执行这些操作。   </p>
+<p>这里要说一下，因为版本的确定还是一个依赖于内容决定的主观性动作，所以不可能全自动的通过工具实现，谁知道你改的内容是否向下兼容，这里作为开发者要有自己的判断。   </p>
+<p>因此只能实现个半自动操作:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">npm version  opt</span><br><span class="line"><span class="comment">// 这里opt 的取值如下，跟语义化版本是对应的。</span></span><br><span class="line">patch, minor, major, prepatch, preminor, premajor, prerelease</span><br></pre></td></tr></table></figure>
+<p>官方解释：<br>Run this in a package directory to bump the version and write the new data back to package.json, package-lock.json, and, if present, npm-shrinkwrap.json.</p>
+<p>不仅会根据指令自动升级版本，升级幅度为1。而且会回写到下面文件中package.json, package-lock.json, and, if present, npm-shrinkwrap.json。<br>这里有个点需要注意，如果是在git仓库下，还会自动创建一个版本commit和tag，可以通过下面的指令避免：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm --no-git-tag-version version</span><br></pre></td></tr></table></figure>
+<p>举个例子： </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 当前版本 1.0.0</span></span><br><span class="line"> <span class="string">"version"</span>: <span class="string">"1.0.0"</span>,</span><br><span class="line"><span class="comment">// 升级大版本好</span></span><br><span class="line">npm version major</span><br><span class="line"><span class="comment">// 执行后当前结果</span></span><br><span class="line"> <span class="string">"version"</span>: <span class="string">"2.0.0"</span>,</span><br></pre></td></tr></table></figure>
+<h4 id="总结-1"><a href="#总结-1" class="headerlink" title="总结"></a>总结</h4><p>这一节的重点就在于介绍了升级版本的半自动操作，虽然本地开发时看起来半自动提升不明显。<br>但是在ci/cd中，就可以结合git，实现升版本，push代码的联合操作。<br>避免忘记修改版本重新发布的情况。  </p>
+<h3 id="谁来发布"><a href="#谁来发布" class="headerlink" title="谁来发布"></a>谁来发布</h3><p>前面讲到了发布npm的直接一步，但这之前还需要个前置步骤。那就是登录了，否则作为一个成熟的系统，游客随便就进行修改操作了，那也太可怕了。</p>
+<p>常规操作：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">npm login</span><br><span class="line">-&gt; npm login</span><br><span class="line">Username: </span><br><span class="line">Password:</span><br><span class="line">Email: (<span class="keyword">this</span> IS public)</span><br></pre></td></tr></table></figure>
+<p>依次执行就可以了，假如不确定是否登录，可以通过查看命令来看： </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm whoami</span><br></pre></td></tr></table></figure>
+<p>登录完成之后，不一定可以发布指定包，需要具备权限（这也是要我们登录的原因，鉴权嘛），假如没有，可以让有权限的同学通过下面命令添加：<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 给zhangshan增加pkg1 包的发布权限</span></span><br><span class="line">npm owner add zhangshan pkg1</span><br></pre></td></tr></table></figure></p>
+<p>假如某一天登录态过期了，那么我们又要重新执行这些操作了。那么是否可以有方式配置自己的登录态呢，这就要依赖.npmrc这个文件了。</p>
+<h4 id="npmrc"><a href="#npmrc" class="headerlink" title="npmrc"></a>npmrc</h4><p>npm的配置文件，相关配置项可以参考：<a href="https://www.npmjs.cn/misc/config/" target="_blank" rel="noopener">https://www.npmjs.cn/misc/config/</a><br>例如我们常见的修改为淘宝源，除了通过如下命令行的形式外：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm config set registry https:<span class="comment">//registry.npm.taobao.org</span></span><br></pre></td></tr></table></figure>
+<p>还可以通过.npmrc来配置</p>
+<h4 id="npmrc的位置"><a href="#npmrc的位置" class="headerlink" title=".npmrc的位置"></a>.npmrc的位置</h4><p>作为基本的配置项，npm的设置还是非常灵活的，允许用户自定义来满足定制化需求，但是用户一般只会修改几项，所以一般我们会遇到四个是.npmrc的文件： </p>
+<ul>
+<li>每个项目的配置文件，位置是： (/path/to/my/project/.npmrc)</li>
+<li>每个用户的配置文件，位置是：(~/.npmrc)<br>因为每个计算机可以有多个用户。</li>
+<li>全局配置文件，位置是 ($PREFIX/etc/npmrc)</li>
+<li>npm 内置配置文件，位置是 (/path/to/npm/npmrc)<br>全局都有了，为啥还有个内置呢，避免不完全修改，做个备份。</li>
+</ul>
+<p><strong>这四个文件的优先级是自上而下组件减小的</strong><br>这样也可以理解，用户的修改项目本地文件是最低成本且不会造成其他影响的，所以优先级最高，npm内置的优先级最低。</p>
+<p>其内容都是key-value的形式。<br>举个例子：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 随手从网上找了个：</span></span><br><span class="line">prefix=D:\Program Files\nodejs\node_global</span><br><span class="line">cache=D:\Program Files\nodejs\node_cache</span><br><span class="line">registry=https:<span class="comment">//registry.npm.taobao.org</span></span><br></pre></td></tr></table></figure>
+<p>假如要修改用户名，在其中进行修改即可。  </p>
+<h2 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h2><p>本来想一篇就把npm的相关内容介绍完毕，没想到随便展开一下就很多了，本文就到这里吧，其他的后面再行更新。本文是一篇学习笔记，部分内容没有展开讲，有兴趣的同学可以直接<a href="https://docs.npmjs.com/cli-documentation/" target="_blank" rel="noopener">官网深究</a>。<br>因为精力和能力有限，如果有疏漏，忘不吝指正。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/07/03/yaml/" rel="next" title="YAMLvsJSONvsXML">
+                <i class="fa fa-chevron-left"></i> YAMLvsJSONvsXML
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">felix.pan</p>
+              <p class="site-description motion-element" itemprop="description">潇湘待雨个人博客</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">38</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text"><a href="#&#x524D;&#x8A00;" class="headerlink" title="&#x524D;&#x8A00;"></a>&#x524D;&#x8A00;</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#npm-publish-发布npm包"><span class="nav-number">2.</span> <span class="nav-text"><a href="#npm-publish-&#x53D1;&#x5E03;npm&#x5305;" class="headerlink" title="npm publish &#x53D1;&#x5E03;npm&#x5305;"></a>npm publish &#x53D1;&#x5E03;npm&#x5305;</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#发布哪些文件"><span class="nav-number">2.1.</span> <span class="nav-text"><a href="#&#x53D1;&#x5E03;&#x54EA;&#x4E9B;&#x6587;&#x4EF6;" class="headerlink" title="&#x53D1;&#x5E03;&#x54EA;&#x4E9B;&#x6587;&#x4EF6;"></a>&#x53D1;&#x5E03;&#x54EA;&#x4E9B;&#x6587;&#x4EF6;</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#总结"><span class="nav-number">2.1.1.</span> <span class="nav-text"><a href="#&#x603B;&#x7ED3;" class="headerlink" title="&#x603B;&#x7ED3;"></a>&#x603B;&#x7ED3;</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#发布什么版本"><span class="nav-number">2.2.</span> <span class="nav-text"><a href="#&#x53D1;&#x5E03;&#x4EC0;&#x4E48;&#x7248;&#x672C;" class="headerlink" title="&#x53D1;&#x5E03;&#x4EC0;&#x4E48;&#x7248;&#x672C;"></a>&#x53D1;&#x5E03;&#x4EC0;&#x4E48;&#x7248;&#x672C;</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#总结-1"><span class="nav-number">2.2.1.</span> <span class="nav-text"><a href="#&#x603B;&#x7ED3;-1" class="headerlink" title="&#x603B;&#x7ED3;"></a>&#x603B;&#x7ED3;</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#谁来发布"><span class="nav-number">2.3.</span> <span class="nav-text"><a href="#&#x8C01;&#x6765;&#x53D1;&#x5E03;" class="headerlink" title="&#x8C01;&#x6765;&#x53D1;&#x5E03;"></a>&#x8C01;&#x6765;&#x53D1;&#x5E03;</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#npmrc"><span class="nav-number">2.3.1.</span> <span class="nav-text"><a href="#npmrc" class="headerlink" title="npmrc"></a>npmrc</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#npmrc的位置"><span class="nav-number">2.3.2.</span> <span class="nav-text"><a href="#npmrc&#x7684;&#x4F4D;&#x7F6E;" class="headerlink" title=".npmrc&#x7684;&#x4F4D;&#x7F6E;"></a>.npmrc&#x7684;&#x4F4D;&#x7F6E;</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#结束语"><span class="nav-number">3.</span> <span class="nav-text"><a href="#&#x7ED3;&#x675F;&#x8BED;" class="headerlink" title="&#x7ED3;&#x675F;&#x8BED;"></a>&#x7ED3;&#x675F;&#x8BED;</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">felix.pan</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
